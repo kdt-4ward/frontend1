@@ -13,15 +13,18 @@ interface Message {
   text: string;
   isMine: boolean;
 }
-
-export default function Chat() {
+interface ChatProps {
+  userId: string;
+}
+export default function Chat({userId}: ChatProps) {
   const [chatLog, setChatLog] = useState<Message[]>([]);
   const [message, setMessage] = useState('');
   const socketRef = useRef<WebSocket | null>(null);
   const reconnectInterval = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const connectWebSocket = () => {
-    const socket = new WebSocket('wss://ws.ifelse.io');
+    const socket = new WebSocket(`wss://57f3-221-148-97-239.ngrok-free.app/ws/${userId}`);
+    // const socket = new WebSocket('wss://ws.ifelse.io');
     socketRef.current = socket;
 
     socket.onopen = () => {
