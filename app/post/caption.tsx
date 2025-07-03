@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import {
   View,
@@ -9,18 +10,28 @@ import {
   Text,
   Alert,
 } from 'react-native';
-import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useRouter } from 'expo-router';
+import { usePost } from '../context/PostContext'; // ⬅️ PostContext 불러오기
 
 export default function CaptionScreen() {
-  const { images } = useLocalSearchParams();
   const router = useRouter();
+  const { post, setPost } = usePost(); // ⬅️ 이미지 + 텍스트 상태 접근
+  console.log("CaptionScreen")
+  const imageList = post.images;
+  const [caption, setCaption] = useState(post.caption || '');
 
-  const imageList: string[] = JSON.parse(images as string);
-  const [caption, setCaption] = useState('');
+  if (!imageList || imageList.length === 0) {
+    Alert.alert('이미지를 먼저 선택해주세요!');
+    return (
+      <View style={styles.container}>
+        <Text>이미지를 먼저 선택해주세요!</Text>
+      </View>
+    );
+  }
 
   const handleSubmit = () => {
-    if (!caption.trim()) {
-      Alert.alert('내용을 입력해주세요!');
+    if (imageList.length === 0) {
+      Alert.alert('이미지를 먼저 선택해주세요!');
       return;
     }
 
@@ -28,28 +39,32 @@ export default function CaptionScreen() {
     console.log('🖼️ 이미지:', imageList);
     console.log('📝 텍스트:', caption);
 
-    Alert.alert('게시 완료 (임시)');
-    router.replace('/(tabs)/tabpost'); // 게시 후 피드로 이동
+    // 상태 초기화 (옵션)
+    setPost({ images: [], caption: '' });
+
+    router.replace('/tabpost');
   };
 
   return (
     <View style={styles.container}>
+      <ScrollView horizontal style={styles.imageRow}>
+        {imageList.map((uri, idx) => (
+          <Image key={idx} source={{ uri }} style={styles.image} />
+        ))}
+      </ScrollView>
+
       <ScrollView style={{ flex: 1 }}>
         <Text style={styles.label}>게시글 내용</Text>
         <TextInput
           multiline
           placeholder="설명을 입력하세요..."
           value={caption}
-          onChangeText={setCaption}
+          onChangeText={(text) => {
+            setCaption(text);
+            setPost((prev) => ({ ...prev, caption: text })); // ⬅️ 실시간으로 context에 저장
+          }}
           style={styles.input}
         />
-
-        <Text style={styles.label}>선택한 사진</Text>
-        <ScrollView horizontal style={styles.imageRow}>
-          {imageList.map((uri, idx) => (
-            <Image key={idx} source={{ uri }} style={styles.image} />
-          ))}
-        </ScrollView>
       </ScrollView>
 
       <TouchableOpacity style={styles.postButton} onPress={handleSubmit}>

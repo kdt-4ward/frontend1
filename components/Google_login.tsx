@@ -6,7 +6,7 @@ interface GoogleLoginProps {
   onLoginSuccess: (user: { user_id: string; name: string; email: string }) => void;
 }
 const CLIENT_ID = '20389543951-lp415huk9beqdqainbb9u15iam327qha.apps.googleusercontent.com';
-const REDIRECT_URI = 'https://be85-221-148-97-239.ngrok-free.app/auth/google/callback';
+const REDIRECT_URI = 'https://api.luvtune.site/auth/google/callback';
 
 export default function Google_login({ onLoginSuccess }: GoogleLoginProps) {
   const [request, response, promptAsync] = AuthSession.useAuthRequest(

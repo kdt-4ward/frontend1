@@ -23,7 +23,7 @@ export default function Chat({userId}: ChatProps) {
   const reconnectInterval = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const connectWebSocket = () => {
-    const socket = new WebSocket(`wss://57f3-221-148-97-239.ngrok-free.app/ws/${userId}`);
+    const socket = new WebSocket(`wss://api.luvtune.site/ws/${userId}`);
     // const socket = new WebSocket('wss://ws.ifelse.io');
     socketRef.current = socket;
 
