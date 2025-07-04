@@ -11,7 +11,7 @@ import {
   Alert,
 } from 'react-native';
 import { useRouter } from 'expo-router';
-import { usePost } from '../context/PostContext'; // ⬅️ PostContext 불러오기
+import { usePost } from '../../context/PostContext'; // ⬅️ PostContext 불러오기
 
 export default function CaptionScreen() {
   const router = useRouter();
@@ -30,7 +30,10 @@ export default function CaptionScreen() {
   }
 
   const handleSubmit = () => {
+    console.log('🟢 handleSubmit 실행됨');
+
     if (imageList.length === 0) {
+      console.log('🔴 imageList 비어있음');
       Alert.alert('이미지를 먼저 선택해주세요!');
       return;
     }

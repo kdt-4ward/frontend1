@@ -16,7 +16,7 @@ import DraggableFlatList, {
   RenderItemParams,
 } from 'react-native-draggable-flatlist';
 
-import { usePost } from '../context/PostContext';
+import { usePost } from '../../context/PostContext';
 
 
 export default function EditScreen() {

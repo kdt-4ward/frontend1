@@ -7,7 +7,7 @@ import { useEffect } from 'react';
 import 'react-native-reanimated';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { useColorScheme } from '@/components/useColorScheme';
-import { PostProvider } from './context/PostContext';
+import { PostProvider } from '../context/PostContext';
 
 export {
   // Catch any errors thrown by the Layout component.
