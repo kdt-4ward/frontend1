@@ -1,77 +1,124 @@
-
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   View,
   TextInput,
   Image,
-  ScrollView,
   StyleSheet,
   TouchableOpacity,
   Text,
   Alert,
+  FlatList,
 } from 'react-native';
-import { useRouter } from 'expo-router';
-import { usePost } from '../../context/PostContext'; // ⬅️ PostContext 불러오기
+import { useRouter, useLocalSearchParams } from 'expo-router';
+import { usePosts } from '../../context/PostContext';
+import { useUser } from '@/context/UserContext';
+
+const API_BASE_URL = 'http://192.168.0.217:8000';
 
 export default function CaptionScreen() {
   const router = useRouter();
-  const { post, setPost } = usePost(); // ⬅️ 이미지 + 텍스트 상태 접근
-  console.log("CaptionScreen")
-  const imageList = post.images;
-  const [caption, setCaption] = useState(post.caption || '');
+  const params = useLocalSearchParams();
+  const isEdit = !!params.editId;
 
-  if (!imageList || imageList.length === 0) {
-    Alert.alert('이미지를 먼저 선택해주세요!');
-    return (
-      <View style={styles.container}>
-        <Text>이미지를 먼저 선택해주세요!</Text>
-      </View>
-    );
-  }
+  const { userInfo } = useUser();
+  const { draftPost, setDraftPost } = usePosts();
+  console.log('🔥 userInfo =', userInfo);
 
-  const handleSubmit = () => {
-    console.log('🟢 handleSubmit 실행됨');
+  const imageList = draftPost.images;
+  const [caption, setCaption] = useState(draftPost.caption || '');
+  const alertShown = useRef(false);
 
-    if (imageList.length === 0) {
-      console.log('🔴 imageList 비어있음');
+  useEffect(() => {
+    if ((!imageList || imageList.length === 0) && !alertShown.current) {
+      alertShown.current = true;
+      Alert.alert('이미지를 먼저 선택해주세요!', '', [
+        {
+          text: '확인',
+          onPress: () => {
+            alertShown.current = false;
+            router.back();
+          },
+        },
+      ]);
+    }
+  }, []);
+
+  const handleSubmit = async () => {
+    if (!imageList || imageList.length === 0) {
       Alert.alert('이미지를 먼저 선택해주세요!');
       return;
     }
 
-    console.log('🔥 게시물 업로드!');
-    console.log('🖼️ 이미지:', imageList);
-    console.log('📝 텍스트:', caption);
+    if (!userInfo?.user_id) {
+      Alert.alert('로그인이 필요합니다');
+      return;
+    }
 
-    // 상태 초기화 (옵션)
-    setPost({ images: [], caption: '' });
+    const url = isEdit
+      ? `${API_BASE_URL}/post/${params.editId}`
+      : `${API_BASE_URL}/post/`;
+    const method = isEdit ? 'PUT' : 'POST';
 
-    router.replace('/tabpost');
+    try {
+      const response = await fetch(url, {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          user_id: userInfo.user_id,
+          couple_id: userInfo.couple_id,
+          content: caption,
+          images: imageList.map((url, index) => ({
+            image_url: url,
+            image_order: index
+          })),
+        }),
+      });
+
+      if (!response.ok) throw new Error('서버 오류');
+
+      Alert.alert(isEdit ? '수정 완료!' : '업로드 완료!', '', [
+        {
+          text: '확인',
+          onPress: () => {
+            router.replace('/tabpost');
+            setTimeout(() => {
+              setDraftPost({ images: [], caption: '', author: '' });
+            }, 300);
+          },
+        },
+      ]);
+    } catch (error) {
+      Alert.alert('업로드 실패', '다시 시도해주세요');
+      console.error('요청 실패:', error);
+    }
   };
 
   return (
     <View style={styles.container}>
-      <ScrollView horizontal style={styles.imageRow}>
-        {imageList.map((uri, idx) => (
-          <Image key={idx} source={{ uri }} style={styles.image} />
-        ))}
-      </ScrollView>
+      <FlatList
+        data={imageList}
+        horizontal
+        keyExtractor={(item, index) => `${item}-${index}`}
+        renderItem={({ item }) => (
+          <Image source={{ uri: item }} style={styles.image} resizeMode="cover" />
+        )}
+        contentContainerStyle={styles.imageRow}
+        showsHorizontalScrollIndicator={false}
+      />
 
-      <ScrollView style={{ flex: 1 }}>
+      <View style={{ flex: 1 }}>
         <Text style={styles.label}>게시글 내용</Text>
         <TextInput
           multiline
-          placeholder="설명을 입력하세요..."
+          placeholder="사진과 함께 추억을 남겨보세요!"
           value={caption}
-          onChangeText={(text) => {
-            setCaption(text);
-            setPost((prev) => ({ ...prev, caption: text })); // ⬅️ 실시간으로 context에 저장
-          }}
+          onChangeText={setCaption}
           style={styles.input}
         />
-      </ScrollView>
+      </View>
 
       <TouchableOpacity style={styles.postButton} onPress={handleSubmit}>
-        <Text style={styles.postText}>게시하기</Text>
+        <Text style={styles.postText}>{isEdit ? '수정하기' : '게시하기'}</Text>
       </TouchableOpacity>
     </View>
   );
@@ -79,12 +126,7 @@ export default function CaptionScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, padding: 20, backgroundColor: '#fff' },
-  label: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    marginTop: 10,
-    marginBottom: 6,
-  },
+  label: { fontSize: 16, fontWeight: 'bold', marginTop: 10, marginBottom: 6 },
   input: {
     borderWidth: 1,
     borderColor: '#ccc',
@@ -92,6 +134,8 @@ const styles = StyleSheet.create({
     padding: 10,
     backgroundColor: '#f9f9f9',
     borderRadius: 8,
+    fontSize: 15,
+    marginBottom: 10,
   },
   imageRow: {
     flexDirection: 'row',
@@ -102,6 +146,7 @@ const styles = StyleSheet.create({
     height: 100,
     marginRight: 10,
     borderRadius: 8,
+    backgroundColor: '#eee',
   },
   postButton: {
     backgroundColor: '#2196f3',

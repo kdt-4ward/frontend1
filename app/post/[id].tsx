@@ -1,67 +1,195 @@
-
-import { useLocalSearchParams } from 'expo-router';
-import { useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import {
-  View,
-  Text,
-  Image,
-  TextInput,
-  TouchableOpacity,
-  StyleSheet,
-  Platform,
+  View, Text, Image, TextInput, TouchableOpacity,
+  StyleSheet, ScrollView, Alert, Dimensions
 } from 'react-native';
-import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
+import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useUser } from '@/context/UserContext';
 
+const API_BASE_URL = 'http://192.168.0.217:8000';
+const SCREEN_WIDTH = Dimensions.get('window').width;
+type Comment = {
+  comment_id: number;
+  post_id: number;
+  user_id: string;
+  comment: string;
+  created_at: string;
+};
+
+type Post = {
+  post_id: number;
+  user_id: string;
+  couple_id: string;
+  content: string;
+  created_at: string;
+  images: string[];
+};
 export default function PostDetailScreen() {
+  const { userInfo } = useUser();
+  const userId = userInfo?.user_id;
+  const router = useRouter();
   const { id } = useLocalSearchParams();
-  const [comments, setComments] = useState<string[]>([]);
+
+  const [post, setPost] = useState<Post | null>(null);
+  const [comments, setComments] = useState<Comment[]>([]);
   const [input, setInput] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [imageSizes, setImageSizes] = useState<{ width: number; height: number }[]>([]);
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const handleAddComment = () => {
-    if (!input.trim()) return;
-    setComments([...comments, input.trim()]);
-    setInput('');
+  const fetchPostAndComments = async () => {
+    if (loading) return;
+    setLoading(true);
+    try {
+      const postRes = await fetch(`${API_BASE_URL}/post/${id}`);
+      const postData = await postRes.json();
+      setPost(postData);
+
+      const commentRes = await fetch(`${API_BASE_URL}/comment/${id}`);
+      const commentData = await commentRes.json();
+      setComments(Array.isArray(commentData) ? commentData : []);
+    } catch (e) {
+      console.log('게시글/댓글 불러오기 실패', e);
+    }
+    setLoading(false);
   };
 
-  const post = {
-    id,
-    text: '이 날 정말 즐거웠어 ',
-    images: [
-      'https://placekitten.com/400/400',
-      'https://placekitten.com/401/400',
-    ],
-    date: '2025-07-02',
-    author: '소우',
+  const debounceFetch = () => {
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(fetchPostAndComments, 200);
   };
+
+  useEffect(() => {
+    debounceFetch();
+  }, [id]);
+
+  useEffect(() => {
+    if (post?.images?.length) {
+      const fetchSizes = async () => {
+        const promises = post.images.map((uri) =>
+          new Promise<{ width: number; height: number }>((resolve) => {
+            Image.getSize(uri, (width, height) => {
+              resolve({ width, height });
+            }, () => resolve({ width: 1, height: 1 }));
+          })
+        );
+        const sizes = await Promise.all(promises);
+        setImageSizes(sizes);
+      };
+      fetchSizes();
+    }
+  }, [post?.images]);
+
+  const handleAddComment = async () => {
+    if (!input.trim() || !userId) return;
+    try {
+      await fetch(`${API_BASE_URL}/comment`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          user_id: userId,
+          post_id: Number(id),
+          comment: input.trim() 
+        }),
+      });
+      setInput('');
+      debounceFetch();
+    } catch (e) {
+      Alert.alert('댓글 등록 실패', '다시 시도해주세요');
+    }
+  };
+
+  const handleDeleteComment = async (commentId: number, commentUserId: string) => {
+    if (commentUserId !== userId) return;
+    try {
+      await fetch(`${API_BASE_URL}/comment/${commentId}?user_id=${userId}`, {
+        method: 'DELETE',
+      });
+      debounceFetch();
+    } catch (e) {
+      Alert.alert('댓글 삭제 실패', '다시 시도해주세요');
+    }
+  };
+
+  const handleEditPost = () => {
+    if (!post?.post_id) return;
+    router.push({ pathname: '/post/edit', params: { editId: post.post_id } });
+  };
+
+  const handleDeletePost = () => {
+    if (!post?.post_id) return;
+    Alert.alert('정말 삭제할까요?', '', [
+      { text: '취소', style: 'cancel' },
+      {
+        text: '삭제', style: 'destructive', onPress: async () => {
+          try {
+            const res = await fetch(`${API_BASE_URL}/post/${post.post_id}`, { method: 'DELETE' });
+            if (res.ok) {
+              Alert.alert('삭제 완료', '', [{ text: '확인', onPress: () => router.replace('/tabpost') }]);
+            } else {
+              Alert.alert('삭제 실패', '잠시 후 다시 시도해보세요');
+            }
+          } catch (e) {
+            Alert.alert('삭제 오류', '네트워크 오류');
+          }
+        }
+      }
+    ]);
+  };
+
+  if (!post) {
+    return <View style={styles.centered}><Text>게시글을 불러오는 중...</Text></View>;
+  }
 
   return (
-    <KeyboardAwareScrollView
-      contentContainerStyle={styles.container}
-      enableOnAndroid
-      keyboardShouldPersistTaps="handled"
-      extraScrollHeight={Platform.OS === 'android' ? 270 : 40}
-    >
-      {/* 📸 이미지 */}
-      {post.images.map((uri, idx) => (
-        <Image key={idx} source={{ uri }} style={styles.image} />
-      ))}
+    <ScrollView contentContainerStyle={styles.container}>
+      {post.images && post.images.length > 0 && (
+        <View style={styles.imageList}>
+          {post.images.map((img, index) => {
+            const { width, height } = imageSizes[index] || { width: 1, height: 1 };
+            const ratio = height / width;
+            const displayHeight = SCREEN_WIDTH * ratio;
 
-      {/* 📝 게시글 텍스트 */}
-      <Text style={styles.text}>{post.text}</Text>
-      <Text style={styles.meta}>{post.date} · {post.author}</Text>
+            return (
+              <Image
+                key={`${img}-${index}`}
+                source={{ uri: img }}
+                style={{ width: '100%', height: displayHeight, marginBottom: 12, borderRadius: 10 }}
+                resizeMode="cover"
+              />
+            );
+          })}
+        </View>
+      )}
 
-      {/* 💬 댓글 리스트 */}
+      <Text style={styles.content}>{post.content}</Text>
+      <Text style={styles.meta}>{post.created_at}</Text>
+
+      {post.user_id === userId && (
+        <View style={{ flexDirection: 'row', justifyContent: 'flex-end', marginBottom: 10 }}>
+          <TouchableOpacity onPress={handleEditPost}><Text style={{ color: 'blue', fontWeight: 'bold', marginRight: 10 }}>수정</Text></TouchableOpacity>
+          <TouchableOpacity onPress={handleDeletePost}><Text style={{ color: 'red', fontWeight: 'bold' }}>삭제</Text></TouchableOpacity>
+        </View>
+      )}
+
       <View style={styles.commentSection}>
         <Text style={styles.commentTitle}>댓글</Text>
-        {comments.length === 0 && (
+        {comments.length === 0 ? (
           <Text style={styles.noComment}>아직 댓글이 없어요.</Text>
+        ) : (
+          comments.map((cmt) => (
+            <View key={cmt.comment_id} style={styles.commentRow}>
+              <Text style={styles.commentItem}>{cmt.comment}</Text>
+              {cmt.user_id === userId && (
+                <TouchableOpacity onPress={() => handleDeleteComment(cmt.comment_id, cmt.user_id)}>
+                  <Text style={{ color: 'red', marginLeft: 8, fontWeight: 'bold' }}>X</Text>
+                </TouchableOpacity>
+              )}
+            </View>
+          ))
         )}
-        {comments.map((cmt, idx) => (
-          <Text key={idx} style={styles.commentItem}>• {cmt}</Text>
-        ))}
       </View>
 
-      {/* ✏️ 댓글 입력창 */}
       <View style={styles.inputBox}>
         <TextInput
           style={styles.input}
@@ -73,35 +201,29 @@ export default function PostDetailScreen() {
           <Text style={styles.buttonText}>등록</Text>
         </TouchableOpacity>
       </View>
-    </KeyboardAwareScrollView>
+      <View style={{ height: 80 }} />
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flexGrow: 1,
-    padding: 20,
-    paddingBottom: 30,
-    backgroundColor: '#fff',
-  },
-  image: {
-    width: '100%',
-    height: 300,
-    borderRadius: 10,
-    marginBottom: 10,
-  },
-  text: { fontSize: 18, marginBottom: 8 },
+  container: { flexGrow: 1, padding: 20, backgroundColor: '#fff' },
+  centered: { flex: 1, alignItems: 'center', justifyContent: 'center' },
+  imageList: { marginBottom: 10 },
+  content: { fontSize: 16, marginBottom: 10 },
   meta: { fontSize: 12, color: '#666', marginBottom: 20 },
-  commentSection: { marginTop: 10 },
-  commentTitle: { fontSize: 16, fontWeight: 'bold', marginBottom: 6 },
+  commentSection: { marginTop: 18, marginBottom: 8 },
+  commentTitle: { fontSize: 16, fontWeight: 'bold', marginBottom: 8 },
   noComment: { color: '#aaa' },
-  commentItem: { fontSize: 14, marginBottom: 4 },
+  commentRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 6 },
+  commentItem: { fontSize: 14 },
   inputBox: {
     flexDirection: 'row',
-    marginTop: 20,
     borderTopWidth: 1,
     borderColor: '#eee',
     paddingTop: 10,
+    alignItems: 'center',
+    marginTop: 10,
   },
   input: {
     flex: 1,
@@ -116,9 +238,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#2196f3',
     justifyContent: 'center',
     borderRadius: 6,
+    height: 44,
   },
-  buttonText: {
-    color: '#fff',
-    fontWeight: 'bold',
-  },
+  buttonText: { color: '#fff', fontWeight: 'bold' },
 });

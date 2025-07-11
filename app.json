@@ -32,7 +32,8 @@
     },
     "plugins": [
       "expo-router",
-      "expo-web-browser"
+      "expo-web-browser",
+      "expo-font"
     ],
     "experiments": {
       "typedRoutes": true
@@ -43,11 +44,12 @@
         "projectId": "e58a3822-00fb-4468-8c91-2b3d7c9d1505"
       }
     },
-    "runtimeVersion": {
-      "policy": "appVersion"
-    },
+    "runtimeVersion": "1.0.0",
     "updates": {
       "url": "https://u.expo.dev/e58a3822-00fb-4468-8c91-2b3d7c9d1505"
+    },
+    "expo-router": {
+      "experimentalGroupRoutes": true
     }
   }
 }

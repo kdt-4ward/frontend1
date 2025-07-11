@@ -6,13 +6,24 @@ import Colors from '@/constants/Colors';
 import { useColorScheme } from '@/components/useColorScheme';
 import { useClientOnlyValue } from '@/components/useClientOnlyValue';
 import { EmotionProvider } from '@/context/EmotionContext';
+
+// User 타입에 couple_id 반드시 포함!
 interface User {
   user_id: string;
   name: string;
   email: string;
+  couple_id: string;
 }
 
-// ✅ Context 타입 정의
+// ✅ 테스트용 계정 (여기서 계정/커플ID 바꿔가며 테스트 가능!)
+const DEFAULT_TEST_USER: User = {
+  user_id: 'test1',          // 내 테스트 계정
+  name: '테스트유저1',
+  email: 'test1@example.com',
+  couple_id: 'couple1',      // 연인과 맞춰야 함!
+};
+
+// Context 정의 (변경 없음)
 export const UserContext = createContext<{
   userInfo: User | null;
   setUserInfo: (user: User) => void;
@@ -20,7 +31,7 @@ export const UserContext = createContext<{
   userInfo: null,
   setUserInfo: () => {},
 });
-// You can explore the built-in icon families and icons on the web at https://icons.expo.fyi/
+
 function TabBarIcon(props: {
   name: React.ComponentProps<typeof FontAwesome>['name'];
   color: string;
@@ -30,7 +41,8 @@ function TabBarIcon(props: {
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
-  const [userInfo, setUserInfo] = useState<User | null>(null);
+  // ⭐️ userInfo를 테스트 계정으로 초기화!
+  const [userInfo, setUserInfo] = useState<User | null>(DEFAULT_TEST_USER);
 
   return (
     <UserContext.Provider value={{ userInfo, setUserInfo }}>
@@ -69,13 +81,23 @@ export default function TabLayout() {
               tabBarIcon: ({ color }) => <TabBarIcon name="code" color={color} />,
             }}
           />
+          <Tabs.Screen
+            name="feelings"
+            options={{
+              title: '감정 기록',
+              tabBarIcon: ({ color }) => <TabBarIcon name="smile-o" color={color} />,
+            }}
+          />
+          <Tabs.Screen
+            name="tabpost"
+            options={{
+              title: '게시글',
+              tabBarIcon: ({ color }) => <TabBarIcon name="home" color={color} />,
+            }}
+          />
         </Tabs>
       </EmotionProvider>
     </UserContext.Provider>
   );
 }
-
-
-
-
 

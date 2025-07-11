@@ -1,83 +1,93 @@
-
-import React from 'react';
+import React, { useState } from 'react';
 import {
-  View,
-  FlatList,
-  Image,
-  StyleSheet,
-  Dimensions,
-  TouchableOpacity,
+  View, FlatList, StyleSheet, Text, RefreshControl,
 } from 'react-native';
-import { useRouter } from 'expo-router';
+import { useRouter, useFocusEffect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import { useUser } from '@/context/UserContext';
+import { usePosts } from '@/context/PostContext';
+import PostThumbnail from '@/components/PostThumbnail';
+import { Pressable } from 'react-native-gesture-handler';
 
-const dummyPosts = [
-  {
-    id: '1',
-    images: ['https://placekitten.com/400/400'],
-  },
-  {
-    id: '2',
-    images: ['https://placekitten.com/401/401'],
-  },
-  {
-    id: '3',
-    images: ['https://placekitten.com/402/402'],
-  },
-  {
-    id: '4',
-    images: ['https://placekitten.com/403/403'],
-  },
-  {
-    id: '5',
-    images: ['https://placekitten.com/404/404'],
-  },
-];
-
-const numColumns = 3;
-const size = Dimensions.get('window').width / numColumns;
+const API_BASE_URL = 'http://192.168.0.217:8000';
 
 export default function TabPostScreen() {
   const router = useRouter();
+  const { userInfo } = useUser();
+  const coupleId = userInfo?.couple_id;
+  const [remotePosts, setRemotePosts] = useState<any[]>([]);
+  const [loading, setLoading] = useState(false);
 
-  const renderItem = ({ item }: { item: typeof dummyPosts[0] }) => (
-    <TouchableOpacity
-      onPress={() =>
-        router.push({
-          pathname: '/post/[id]',
-          params: { id: item.id },
-        })
-      }
-    >
-      <Image source={{ uri: item.images[0] }} style={styles.image} />
-    </TouchableOpacity>
+  const fetchPosts = async () => {
+    if (!coupleId) return;
+    setLoading(true);
+    try {
+      const response = await fetch(`${API_BASE_URL}/post/couple/${coupleId}`);
+      const data = await response.json();
+      setRemotePosts(Array.isArray(data) ? data : []);
+    } catch (e) {
+      console.log('📛 게시글 불러오기 실패:', e);
+    }
+    setLoading(false);
+  };
+
+  useFocusEffect(
+    React.useCallback(() => {
+      fetchPosts();
+    }, [coupleId])
   );
+
+  const onRefresh = () => {
+    fetchPosts();
+  };
+
+  const goDetail = (postId: number) => {
+    router.push({ pathname: '/post/[id]', params: { id: String(postId) } });
+  };
+
+  const renderItem = ({ item }: { item: any }) => (
+    <PostThumbnail
+      images={item.images}
+      postId={item.post_id}
+      onPress={() => {
+        if (item.post_id) goDetail(item.post_id);
+      }}
+    />
+  );
+
+  const combinedPosts = [
+    ...remotePosts.map((p) => ({
+      ...p,
+      // images: [],
+      isLocal: false,
+    })),
+  ];
 
   return (
     <View style={{ flex: 1 }}>
       <FlatList
-        data={dummyPosts}
+        data={combinedPosts}
         renderItem={renderItem}
-        keyExtractor={(item) => item.id}
-        numColumns={numColumns}
+        keyExtractor={(item, index) => `post-${item.post_id ?? 'local'}-${index}`}
+        numColumns={3}
+        refreshControl={<RefreshControl refreshing={loading} onRefresh={onRefresh} />}
+        ListEmptyComponent={
+          <View style={{ marginTop: 50, alignItems: 'center' }}>
+            <Text style={{ color: '#aaa' }}>아직 게시글이 없습니다</Text>
+          </View>
+        }
       />
-
-      {/* ➕ 새 게시물 버튼 */}
-      <TouchableOpacity
+      <Pressable
         style={styles.fab}
         onPress={() => router.push('/post/edit')}
       >
         <Ionicons name="add" size={28} color="#fff" />
-      </TouchableOpacity>
+      </Pressable>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  image: {
-    width: size,
-    height: size,
-  },
   fab: {
     position: 'absolute',
     bottom: 30,
