@@ -1,5 +1,5 @@
 import { login, me } from "@react-native-kakao/user";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Button, View, Text, StyleSheet, Image } from "react-native";
 
 export default function HomeScreen() {

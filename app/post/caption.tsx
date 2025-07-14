@@ -12,6 +12,12 @@ import {
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { usePosts } from '../../context/PostContext';
 import { useUser } from '../../context/UserContext';
+import {
+  KeyboardAvoidingView,
+  Platform,
+  TouchableWithoutFeedback,
+  Keyboard
+} from 'react-native';
 
 const API_BASE_URL = 'http://192.168.0.217:8000';
 
@@ -94,7 +100,12 @@ export default function CaptionScreen() {
   };
 
   return (
-    <View style={styles.container}>
+    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+    <KeyboardAvoidingView
+      style={styles.container}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      keyboardVerticalOffset={80}
+    >
       <FlatList
         data={imageList}
         horizontal
@@ -120,8 +131,9 @@ export default function CaptionScreen() {
       <TouchableOpacity style={styles.postButton} onPress={handleSubmit}>
         <Text style={styles.postText}>{isEdit ? '수정하기' : '게시하기'}</Text>
       </TouchableOpacity>
-    </View>
-  );
+    </KeyboardAvoidingView>
+  </TouchableWithoutFeedback>
+);
 }
 
 const styles = StyleSheet.create({

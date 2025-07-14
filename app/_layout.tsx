@@ -8,7 +8,7 @@ import 'react-native-reanimated';
 
 import { useColorScheme } from '../hooks/useColorScheme';
 import { useEffect } from 'react';
-import { initializeKakaoSDK } from '@react-native-kakao/core';
+import { getKeyHashAndroid, initializeKakaoSDK } from '@react-native-kakao/core';
 import 'react-native-reanimated';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { PostProvider } from '../context/PostContext';
