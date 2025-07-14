@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { View, Text, StyleSheet, Modal, Button } from "react-native";
-import { useEmotionContext } from "@/context/EmotionContext";
-import { emotionCharacters } from "@/constants/emotionCharacters";
-import EmotionRecordFlow from "@/components/EmotionRecordFlow";
+import { useEmotionContext } from "../../context/EmotionContext";
+import { emotionCharacters } from "../../constants/emotionCharacters";
+import EmotionRecordFlow from "../../components/EmotionRecordFlow";
 import { Calendar, DateData } from "react-native-calendars";
 
 // 감정 캐릭터 id로 label/color 찾는 함수

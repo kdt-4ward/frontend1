@@ -4,9 +4,9 @@ import {
 } from 'react-native';
 import { useRouter, useFocusEffect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { useUser } from '@/context/UserContext';
-import { usePosts } from '@/context/PostContext';
-import PostThumbnail from '@/components/PostThumbnail';
+import { useUser } from '../../context/UserContext';
+import { usePosts } from '../../context/PostContext';
+import PostThumbnail from '../../components/PostThumbnail';
 import { Pressable } from 'react-native-gesture-handler';
 
 const API_BASE_URL = 'http://192.168.0.217:8000';

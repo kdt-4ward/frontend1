@@ -1,3 +1,4 @@
+import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
@@ -8,6 +9,7 @@ import 'react-native-reanimated';
 import { useColorScheme } from '../hooks/useColorScheme';
 import { useEffect } from 'react';
 import { initializeKakaoSDK } from '@react-native-kakao/core';
+import 'react-native-reanimated';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { PostProvider } from '../context/PostContext';
 import { UserProvider } from '../context/UserContext'; // 👈 추가!
@@ -37,7 +39,6 @@ export default function RootLayout() {
   }, [loaded]);
 
   if (!loaded) {
-    // Async font loading only occurs in development.
     return null;
   }
 

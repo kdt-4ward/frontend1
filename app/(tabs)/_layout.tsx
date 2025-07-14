@@ -104,11 +104,11 @@
 import React, { useState, createContext } from 'react';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { Tabs } from 'expo-router';
-import { useColorScheme } from '@/components/useColorScheme';
-import { useClientOnlyValue } from '@/components/useClientOnlyValue';
-import { Colors } from '@/constants/Colors';
-import { IconSymbol } from '@/components/ui/IconSymbol';
-import { EmotionProvider } from '@/context/EmotionContext';
+import { useColorScheme } from '../../components/useColorScheme';
+import { useClientOnlyValue } from '../../components/useClientOnlyValue';
+import { Colors } from '../../constants/Colors';
+import { IconSymbol } from '../../components/ui/IconSymbol';
+import { EmotionProvider } from '../../context/EmotionContext';
 
 // User 타입에 couple_id 반드시 포함!
 interface User {
