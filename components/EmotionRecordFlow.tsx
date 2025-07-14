@@ -2,11 +2,11 @@
 import React, { useState, useEffect } from "react";
 import EmotionStep1 from "./EmotionStep1";
 import EmotionStep2 from "./EmotionStep2";
-import { useEmotionContext } from "@/context/EmotionContext";
-import { emotionCharacters } from "@/constants/emotionCharacters";
+import { useEmotionContext } from "../context/EmotionContext";
+import { emotionCharacters } from "../constants/emotionCharacters";
 import { View, TouchableOpacity } from "react-native";
 import { Ionicons } from '@expo/vector-icons';
-import { useUser } from "@/context/UserContext";
+import { useUser } from "../context/UserContext";
 
 interface Props {
   onComplete?: () => void;

@@ -87,9 +87,9 @@ android {
     buildToolsVersion rootProject.ext.buildToolsVersion
     compileSdk rootProject.ext.compileSdkVersion
 
-    namespace 'com.soso12321.frontend'
+    namespace 'com.heasolk.frontend1'
     defaultConfig {
-        applicationId 'com.soso12321.frontend'
+        applicationId 'com.heasolk.frontend1'
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1

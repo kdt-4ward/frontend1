@@ -4,7 +4,7 @@ import {
   StyleSheet, ScrollView, Alert, Dimensions
 } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { useUser } from '@/context/UserContext';
+import { useUser } from '../../context/UserContext';
 
 const API_BASE_URL = 'http://192.168.0.217:8000';
 const SCREEN_WIDTH = Dimensions.get('window').width;

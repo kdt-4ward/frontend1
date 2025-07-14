@@ -11,7 +11,7 @@ import {
 } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { usePosts } from '../../context/PostContext';
-import { useUser } from '@/context/UserContext';
+import { useUser } from '../../context/UserContext';
 
 const API_BASE_URL = 'http://192.168.0.217:8000';
 

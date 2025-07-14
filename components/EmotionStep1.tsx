@@ -2,7 +2,7 @@
 import React, { useState } from "react";
 import { View, Text, TouchableOpacity, FlatList, StyleSheet, Dimensions } from "react-native";
 import { Ionicons } from '@expo/vector-icons';
-import { emotionCharacters, EmotionCharacter } from "@/constants/emotionCharacters";
+import { emotionCharacters, EmotionCharacter } from "../constants/emotionCharacters";
 
 const numColumns = 3;
 const windowHeight = Dimensions.get("window").height;

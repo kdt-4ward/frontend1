@@ -104,10 +104,11 @@
 import React, { useState, createContext } from 'react';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { Tabs } from 'expo-router';
-import { useColorScheme } from '@/components/useColorScheme';
-import { useClientOnlyValue } from '@/components/useClientOnlyValue';
-import Colors from '@/constants/Colors';
-import { EmotionProvider } from '@/context/EmotionContext';
+import { useColorScheme } from '../../components/useColorScheme';
+import { useClientOnlyValue } from '../../components/useClientOnlyValue';
+import { Colors } from '../../constants/Colors';
+import { IconSymbol } from '../../components/ui/IconSymbol';
+import { EmotionProvider } from '../../context/EmotionContext';
 
 // User 타입에 couple_id 반드시 포함!
 interface User {
@@ -178,6 +179,20 @@ export default function TabLayout() {
             options={{
               title: '게시글',
               tabBarIcon: ({ color }) => <TabBarIcon name="th-large" color={color} />,
+            }}
+          />
+          <Tabs.Screen
+            name="home"
+            options={{
+              title: 'Home',
+              tabBarIcon: ({ color }) => <IconSymbol size={28} name="house.fill" color={color} />,
+            }}
+          />
+          <Tabs.Screen
+            name="mypage"
+            options={{
+              title: 'My Page',
+              tabBarIcon: ({ color }) => <IconSymbol size={28} name="paperplane.fill" color={color} />,
             }}
           />
         </Tabs>
