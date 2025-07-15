@@ -165,7 +165,14 @@ export default function TabLayout() {
             }}
           />
           */}
-
+          <Tabs.Screen
+            name="home"
+            options={{
+              title: 'Home',
+              tabBarIcon: ({ color }) => <IconSymbol size={28} name="house.fill" color={color} />,
+            }}
+          />
+          
           <Tabs.Screen
             name="feelings"
             options={{
@@ -179,13 +186,6 @@ export default function TabLayout() {
             options={{
               title: '게시글',
               tabBarIcon: ({ color }) => <TabBarIcon name="th-large" color={color} />,
-            }}
-          />
-          <Tabs.Screen
-            name="home"
-            options={{
-              title: 'Home',
-              tabBarIcon: ({ color }) => <IconSymbol size={28} name="house.fill" color={color} />,
             }}
           />
           <Tabs.Screen
