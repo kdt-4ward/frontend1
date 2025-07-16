@@ -9,7 +9,7 @@ export interface EmotionCharacter {
 }
 
 export const emotionCharacters: EmotionCharacter[] = [
-  { id: '1', label: '고마움', color: '#FFD93D' },     // 노랑
+  { id: '1', label: '고마운', color: '#FFD93D' },     // 노랑
   { id: '2', label: '화난', color: '#FF6B6B' },   // 빨강
   { id: '3', label: '슬픈', color: '#4D96FF' }, // 파랑
   { id: '4', label: '기대', color: '#FFB347' },

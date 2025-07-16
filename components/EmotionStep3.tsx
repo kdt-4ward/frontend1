@@ -42,8 +42,7 @@ export default function EmotionStep3({ basicEmotion, detailEmotions, onSubmit, o
 
       {/* 완료 버튼 */}
       <TouchableOpacity
-        style={[styles.button, memo.trim() === "" && { backgroundColor: "#ccc" }]}
-        disabled={memo.trim() === ""}
+        style={styles.button}
         onPress={() => onSubmit(memo)}
       >
         <Text style={styles.buttonText}>기록 완료</Text>
