@@ -6,6 +6,7 @@ import { useClientOnlyValue } from '../../components/useClientOnlyValue';
 import { Colors } from '../../constants/Colors';
 import { IconSymbol } from '../../components/ui/IconSymbol';
 import { EmotionProvider } from '../../context/EmotionContext';
+import { View } from 'react-native';
 
 function TabBarIcon(props: {
   name: React.ComponentProps<typeof FontAwesome>['name'];
@@ -18,7 +19,7 @@ export default function TabLayout() {
   const colorScheme = useColorScheme();
 
   return (
-    <EmotionProvider>
+    <View style={{ flex: 1 }}>
       <Tabs
         screenOptions={{
           tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
@@ -54,6 +55,6 @@ export default function TabLayout() {
           }}
         />
       </Tabs>
-    </EmotionProvider>
+    </View>
   );
 }

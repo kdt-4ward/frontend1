@@ -9,11 +9,11 @@ import { useEffect, useState } from 'react';
 import { getKeyHashAndroid, initializeKakaoSDK } from '@react-native-kakao/core';
 import 'react-native-reanimated';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import { UserProvider } from '../context/UserContext';
 import { getServiceAccessToken } from '../utils/auth';
 import { useSetAtom } from 'jotai';
 import { userAtom } from '@/atoms/userAtom';
 import { apiFetch } from '@/utils/api';
+import React from 'react';
 
 export { ErrorBoundary } from 'expo-router';
 
@@ -54,16 +54,14 @@ export default function RootLayout() {
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
-      <UserProvider>
-        <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-          <Stack initialRouteName={initialRoute}>
-            <Stack.Screen name="onboarding" options={{ headerShown: false }} />
-            <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-            {/* <Stack.Screen name="+not-found" /> */}
-          </Stack>
-          <StatusBar style="auto" />
-        </ThemeProvider>
-      </UserProvider>
+      <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+        <Stack initialRouteName={initialRoute}>
+          <Stack.Screen name="onboarding" options={{ headerShown: false }} />
+          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+          <Stack.Screen name="+not-found" />
+        </Stack>
+        <StatusBar style="auto" />
+      </ThemeProvider>
     </GestureHandlerRootView>
   );
 }
