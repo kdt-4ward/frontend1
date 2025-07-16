@@ -45,13 +45,10 @@ export default function EditScreen() {
     fetchPost();
   }, [isEdit, params.editId]);
 
-  const uploadImageToServer = async (imageUri: string): Promise<string | null> => {
-    console.log("📤 업로드 시도:", imageUri);
-    
-    if (imageUri.startsWith("http")) {
-      // 이미 업로드된 이미지면 그대로 반환
-      return imageUri;
-    }
+  const uploadImageToServer = async (imageUri: string, retryCount = 0): Promise<string | null> => {
+    // 이미 서버에 올라간 이미지라면 그대로 반환
+    if (imageUri.startsWith("http")) return imageUri;
+  
     const formData = new FormData();
     formData.append("file", {
       uri: imageUri,
@@ -67,15 +64,20 @@ export default function EditScreen() {
           "Content-Type": "multipart/form-data",
         },
       });
-  
       const data = await response.json();
       return data.image_url;
     } catch (error) {
-      console.error("이미지 업로드 실패:", error);
+      console.error(`이미지 업로드 실패 (${retryCount + 1}회):`, imageUri, error);
+      // 2번까지 재시도(총 3회)
+      if (retryCount < 2) {
+        await new Promise(res => setTimeout(res, 1500));
+        return uploadImageToServer(imageUri, retryCount + 1);
+      }
       return null;
     }
   };
   
+  // 여러 장 선택 후 순차 업로드
   const pickImages = async () => {
     if (imageList.length >= MAX_IMAGES) {
       Alert.alert(`이미 최대 ${MAX_IMAGES}장까지 추가했어요!`);
@@ -99,11 +101,15 @@ export default function EditScreen() {
         uris = uris.slice(0, MAX_IMAGES - imageList.length);
       }
   
-      // ✅ S3 대신 FastAPI로 업로드
+      // ✅ 순차적 업로드(for...of + await)
       const uploadedUrls: string[] = [];
       for (const uri of uris) {
         const url = await uploadImageToServer(uri);
         if (url) uploadedUrls.push(url);
+        else {
+          // 업로드 실패 시 경고
+          Alert.alert('사진 업로드 실패', '일부 사진이 정상적으로 업로드되지 않았어요.');
+        }
       }
   
       const newList = [...imageList, ...uploadedUrls];
@@ -113,7 +119,6 @@ export default function EditScreen() {
       setIsFlipped(false);
     }
   };
-  
   const handleDeleteImage = (index: number) => {
     const newList = [...imageList];
     newList.splice(index, 1);

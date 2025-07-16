@@ -11,9 +11,10 @@ interface Props {
   onSubmit: (selected: string[]) => void;
   initialSelected?: string[];
   onCancel?: () => void;
+  onBack?: () => void;
 }
 
-export default function EmotionStep2({ onSubmit, initialSelected, onCancel }: Props) {
+export default function EmotionStep2({ onSubmit, initialSelected, onCancel,onBack }: Props) {
   const [selectedLabels, setSelectedLabels] = useState<string[]>(initialSelected ?? []);
   const [warn, setWarn] = useState(false);
 
@@ -34,8 +35,19 @@ export default function EmotionStep2({ onSubmit, initialSelected, onCancel }: Pr
 
   return (
     <View style={styles.container}>
-      {/* X(닫기) 버튼 */}
+      {/* 뒤로가기(←) 버튼: onBack이 있을 때만 보임 */}
+      {onBack && (
+        <TouchableOpacity onPress={onBack} style={styles.backBnt}>
+          <Ionicons name="arrow-back" size={24} color="#666" />
+        </TouchableOpacity>
+      )}
 
+      {/* X(닫기) 버튼: 필요하다면 아래처럼! */}
+      {/* {onCancel && (
+        <TouchableOpacity onPress={onCancel} style={styles.closeBtn}>
+          <Ionicons name="close" size={28} color="#999" />
+        </TouchableOpacity>
+      )} */}
       {/* 제목 */}
       <Text style={styles.title}>세부 감정을 최대 3개까지 선택하세요</Text>
       {/* 감정 태그 그리드(하단에 배치) */}
@@ -106,6 +118,9 @@ export default function EmotionStep2({ onSubmit, initialSelected, onCancel }: Pr
 }
 
 const styles = StyleSheet.create({
+  backBnt: {
+    position: "absolute", left: 16, top: 36, padding: 8, zIndex: 10,
+  },
   container: {
     flex: 1,
     backgroundColor: "#fff",

@@ -1,43 +1,66 @@
-import React, { createContext, useContext, useState } from "react";
+import React, { createContext, useContext, useState, useEffect } from "react";
+import { useUser } from "./UserContext";
 
-// 타입 정의
 export type BasicEmotion = string;
 export type DetailEmotion = string;
 
 export type EmotionRecord = {
   date: string;      // YYYY-MM-DD
   time: string;      // HH:mm:ss
-  basic: BasicEmotion;           // 1단계에서 선택한 감정 캐릭터 id
-  details: DetailEmotion[];      // 2단계에서 선택한 감정 태그 label (최대 3개)
+  basic: BasicEmotion;
+  details: DetailEmotion[];
+  memo?: string;
 };
 
-type EmotionRecords = Record<string, EmotionRecord>; // 날짜별로 기록 저장
+type EmotionRecords = Record<string, EmotionRecord>;
 
-// Context Props 정의
 interface EmotionContextProps {
-  records: EmotionRecords;                        // 전체 기록
-  todayRecord: EmotionRecord | null;              // 오늘 기록
-  addOrUpdateRecord: (record: EmotionRecord) => void; // 기록 추가/수정
-  selectedDate: string | null;                    // 선택한 날짜
-  setSelectedDate: (date: string) => void;        // 날짜 선택 setter
+  records: EmotionRecords;
+  todayRecord: EmotionRecord | null;
+  addOrUpdateRecord: (record: EmotionRecord) => void;
+  selectedDate: string | null;
+  setSelectedDate: (date: string) => void;
+  loading: boolean;
 }
 
-// Context 생성
 const EmotionContext = createContext<EmotionContextProps | undefined>(undefined);
 
-// Context Custom Hook
 export const useEmotionContext = () => {
   const ctx = useContext(EmotionContext);
   if (!ctx) throw new Error("EmotionContext missing");
   return ctx;
 };
 
-// Provider 구현
 export const EmotionProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [records, setRecords] = useState<EmotionRecords>({});
-  const today = new Date().toISOString().slice(0, 10); // 'YYYY-MM-DD'
+  const today = new Date().toISOString().slice(0, 10);
   const todayRecord = records[today] || null;
   const [selectedDate, setSelectedDate] = useState<string | null>(today);
+  const [loading, setLoading] = useState(true);
+
+  const { userInfo } = useUser();
+
+  useEffect(() => {
+    if (!userInfo?.user_id) return;
+    setLoading(true);
+    fetch(`http://192.168.0.217:8000/emotion/log/${userInfo.user_id}`)
+      .then(res => res.json())
+      .then(data => {
+        const rec: EmotionRecords = {};
+        data.forEach((log: any) => {
+          const dateStr = log.recorded_at.slice(0, 10);
+          rec[dateStr] = {
+            date: dateStr,
+            time: log.recorded_at.slice(11, 19),
+            basic: log.emotion,
+            details: log.detail_emotions,
+            memo: log.memo,
+          };
+        });
+        setRecords(rec);
+        setLoading(false);
+      });
+  }, [userInfo?.user_id]);
 
   const addOrUpdateRecord = (record: EmotionRecord) => {
     setRecords((prev) => ({
@@ -49,7 +72,7 @@ export const EmotionProvider: React.FC<{ children: React.ReactNode }> = ({ child
   return (
     <EmotionContext.Provider value={{
       records, todayRecord, addOrUpdateRecord,
-      selectedDate, setSelectedDate
+      selectedDate, setSelectedDate, loading
     }}>
       {children}
     </EmotionContext.Provider>

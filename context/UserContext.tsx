@@ -26,10 +26,10 @@ export const useUser = () => {
 // ✅ 4. Provider 컴포넌트
 export const UserProvider = ({ children }: { children: React.ReactNode }) => {
   const [userInfo, setUserInfo] = useState<User | null>({
-    user_id: 'test1',
-    name: '테스트유저1',
+    user_id: '1',
+    name: '지민',
     email: 'test1@example.com',
-    couple_id: 'couple1',
+    couple_id: '1',
   });
 
   return (

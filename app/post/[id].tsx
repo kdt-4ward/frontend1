@@ -1,10 +1,12 @@
 import React, { useEffect, useState, useRef } from 'react';
 import {
   View, Text, Image, TextInput, TouchableOpacity,
-  StyleSheet, ScrollView, Alert, Dimensions
+  StyleSheet, ScrollView, Alert, Dimensions,
+  KeyboardAvoidingView,
+  Platform
 } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { useUser } from '../../context/UserContext';
+import { useUser } from '@/context/UserContext';
 
 const API_BASE_URL = 'http://192.168.0.217:8000';
 const SCREEN_WIDTH = Dimensions.get('window').width;
@@ -36,6 +38,7 @@ export default function PostDetailScreen() {
   const [loading, setLoading] = useState(false);
   const [imageSizes, setImageSizes] = useState<{ width: number; height: number }[]>([]);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [isCommentSubmitting, setIsCommentSubmitting] = useState(false);
 
   const fetchPostAndComments = async () => {
     if (loading) return;
@@ -81,7 +84,10 @@ export default function PostDetailScreen() {
   }, [post?.images]);
 
   const handleAddComment = async () => {
+    if (isCommentSubmitting) return;   // 이미 등록 중이면 무시
     if (!input.trim() || !userId) return;
+
+    setIsCommentSubmitting(true);
     try {
       await fetch(`${API_BASE_URL}/comment`, {
         method: 'POST',
@@ -97,6 +103,7 @@ export default function PostDetailScreen() {
     } catch (e) {
       Alert.alert('댓글 등록 실패', '다시 시도해주세요');
     }
+    setIsCommentSubmitting(false);
   };
 
   const handleDeleteComment = async (commentId: number, commentUserId: string) => {
@@ -142,67 +149,96 @@ export default function PostDetailScreen() {
   }
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
-      {post.images && post.images.length > 0 && (
-        <View style={styles.imageList}>
-          {post.images.map((img, index) => {
-            const { width, height } = imageSizes[index] || { width: 1, height: 1 };
-            const ratio = height / width;
-            const displayHeight = SCREEN_WIDTH * ratio;
+      <KeyboardAvoidingView
+        style={{ flex: 1, backgroundColor: '#fff' }}
+        behavior={Platform.OS === 'android' ? 'padding' : 'height'}
+        keyboardVerticalOffset={80} // 헤더 높이에 맞게 조정
+      >
+        <View style={{ flex: 1 }}>
+          {/* 게시글/댓글 리스트 스크롤 */}
+          <ScrollView
+            contentContainerStyle={styles.container}
+            keyboardShouldPersistTaps="handled"
+            showsVerticalScrollIndicator={true}
+          >
+            {/* ---- 게시글 이미지 ---- */}
+            {post.images && post.images.length > 0 && (
+              <View style={styles.imageList}>
+                {post.images.map((img, index) => {
+                  const { width, height } = imageSizes[index] || { width: 1, height: 1 };
+                  const ratio = height / width;
+                  const displayHeight = SCREEN_WIDTH * ratio;
+                  return (
+                    <Image
+                      key={`${img}-${index}`}
+                      source={{ uri: img }}
+                      style={{
+                        width: '100%',
+                        height: displayHeight,
+                        marginBottom: 12,
+                        borderRadius: 10,
+                      }}
+                      resizeMode="cover"
+                    />
+                  );
+                })}
+              </View>
+            )}
 
-            return (
-              <Image
-                key={`${img}-${index}`}
-                source={{ uri: img }}
-                style={{ width: '100%', height: displayHeight, marginBottom: 12, borderRadius: 10 }}
-                resizeMode="cover"
-              />
-            );
-          })}
-        </View>
-      )}
+            {/* ---- 게시글 본문 ---- */}
+            <Text style={styles.content}>{post.content}</Text>
+            <Text style={styles.meta}>{post.created_at}</Text>
 
-      <Text style={styles.content}>{post.content}</Text>
-      <Text style={styles.meta}>{post.created_at}</Text>
-
-      {post.user_id === userId && (
-        <View style={{ flexDirection: 'row', justifyContent: 'flex-end', marginBottom: 10 }}>
-          <TouchableOpacity onPress={handleEditPost}><Text style={{ color: 'blue', fontWeight: 'bold', marginRight: 10 }}>수정</Text></TouchableOpacity>
-          <TouchableOpacity onPress={handleDeletePost}><Text style={{ color: 'red', fontWeight: 'bold' }}>삭제</Text></TouchableOpacity>
-        </View>
-      )}
-
-      <View style={styles.commentSection}>
-        <Text style={styles.commentTitle}>댓글</Text>
-        {comments.length === 0 ? (
-          <Text style={styles.noComment}>아직 댓글이 없어요.</Text>
-        ) : (
-          comments.map((cmt) => (
-            <View key={cmt.comment_id} style={styles.commentRow}>
-              <Text style={styles.commentItem}>{cmt.comment}</Text>
-              {cmt.user_id === userId && (
-                <TouchableOpacity onPress={() => handleDeleteComment(cmt.comment_id, cmt.user_id)}>
-                  <Text style={{ color: 'red', marginLeft: 8, fontWeight: 'bold' }}>X</Text>
+            {/* ---- 수정/삭제 버튼 ---- */}
+            {post.user_id === userId && (
+              <View style={{ flexDirection: 'row', justifyContent: 'flex-end', marginBottom: 10 }}>
+                <TouchableOpacity onPress={handleEditPost}>
+                  <Text style={{ color: 'blue', fontWeight: 'bold', marginRight: 10 }}>수정</Text>
                 </TouchableOpacity>
+                <TouchableOpacity onPress={handleDeletePost}>
+                  <Text style={{ color: 'red', fontWeight: 'bold' }}>삭제</Text>
+                </TouchableOpacity>
+              </View>
+            )}
+
+            {/* ---- 댓글 리스트 ---- */}
+            <View style={styles.commentSection}>
+              <Text style={styles.commentTitle}>댓글</Text>
+              {comments.length === 0 ? (
+                <Text style={styles.noComment}>아직 댓글이 없어요.</Text>
+              ) : (
+                comments.map((cmt) => (
+                  <View key={cmt.comment_id} style={styles.commentRow}>
+                    <Text style={styles.commentItem}>{cmt.comment}</Text>
+                    {cmt.user_id === userId && (
+                      <TouchableOpacity onPress={() => handleDeleteComment(cmt.comment_id, cmt.user_id)}>
+                        <Text style={{ color: 'red', marginLeft: 8, fontWeight: 'bold' }}>X</Text>
+                      </TouchableOpacity>
+                    )}
+                  </View>
+                ))
               )}
             </View>
-          ))
-        )}
-      </View>
+            
+            {/* 하단 여유공간 - 실제로는 필요없으면 제거 가능 */}
+            <View style={{ height: 16 }} />
+          </ScrollView>
 
-      <View style={styles.inputBox}>
-        <TextInput
-          style={styles.input}
-          placeholder="댓글을 입력하세요..."
-          value={input}
-          onChangeText={setInput}
-        />
-        <TouchableOpacity onPress={handleAddComment} style={styles.button}>
-          <Text style={styles.buttonText}>등록</Text>
-        </TouchableOpacity>
-      </View>
-      <View style={{ height: 80 }} />
-    </ScrollView>
+          {/* ---- 댓글 입력창(하단 고정!) ---- */}
+          <View style={styles.inputBox}>
+            <TextInput
+              style={styles.input}
+              placeholder="댓글을 입력하세요..."
+              value={input}
+              onChangeText={setInput}
+              // autoFocus, returnKeyType 등 옵션 필요시 추가
+            />
+            <TouchableOpacity onPress={handleAddComment} style={styles.button}>
+              <Text style={styles.buttonText}>등록</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </KeyboardAvoidingView>
   );
 }
 
@@ -221,9 +257,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     borderTopWidth: 1,
     borderColor: '#eee',
-    paddingTop: 10,
+    backgroundColor: '#fff',
     alignItems: 'center',
-    marginTop: 10,
+    paddingHorizontal: 12,
+    paddingVertical: 20,
   },
   input: {
     flex: 1,

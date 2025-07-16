@@ -6,7 +6,7 @@ import { StatusBar } from 'expo-status-bar';
 
 import { useColorScheme } from '../hooks/useColorScheme';
 import { useEffect, useState } from 'react';
-import { initializeKakaoSDK } from '@react-native-kakao/core';
+import { getKeyHashAndroid, initializeKakaoSDK } from '@react-native-kakao/core';
 import 'react-native-reanimated';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { UserProvider } from '../context/UserContext';
