@@ -5,7 +5,7 @@ import {
 import { useRouter, useFocusEffect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useUser } from '../../context/UserContext';
-import { usePosts } from '../../context/PostContext';
+import { PostProvider, usePosts } from '../../context/PostContext';
 import PostThumbnail from '../../components/PostThumbnail';
 import { Pressable } from 'react-native-gesture-handler';
 
@@ -64,26 +64,28 @@ export default function TabPostScreen() {
   ];
 
   return (
-    <View style={{ flex: 1 }}>
-      <FlatList
-        data={combinedPosts}
-        renderItem={renderItem}
-        keyExtractor={(item, index) => `post-${item.post_id ?? 'local'}-${index}`}
-        numColumns={3}
-        refreshControl={<RefreshControl refreshing={loading} onRefresh={onRefresh} />}
-        ListEmptyComponent={
-          <View style={{ marginTop: 50, alignItems: 'center' }}>
-            <Text style={{ color: '#aaa' }}>아직 게시글이 없습니다</Text>
-          </View>
-        }
-      />
-      <Pressable
-        style={styles.fab}
-        onPress={() => router.push('/post/edit')}
-      >
-        <Ionicons name="add" size={28} color="#fff" />
-      </Pressable>
-    </View>
+    <PostProvider>
+      <View style={{ flex: 1 }}>
+        <FlatList
+          data={combinedPosts}
+          renderItem={renderItem}
+          keyExtractor={(item, index) => `post-${item.post_id ?? 'local'}-${index}`}
+          numColumns={3}
+          refreshControl={<RefreshControl refreshing={loading} onRefresh={onRefresh} />}
+          ListEmptyComponent={
+            <View style={{ marginTop: 50, alignItems: 'center' }}>
+              <Text style={{ color: '#aaa' }}>아직 게시글이 없습니다</Text>
+            </View>
+          }
+        />
+        <Pressable
+          style={styles.fab}
+          onPress={() => router.push('/post/edit')}
+        >
+          <Ionicons name="add" size={28} color="#fff" />
+        </Pressable>
+      </View>
+    </PostProvider>
   );
 }
 

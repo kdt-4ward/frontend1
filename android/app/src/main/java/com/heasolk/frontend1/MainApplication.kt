@@ -1,4 +1,4 @@
-package com.heasolk.frontend2
+package com.heasolk.frontend1
 
 import android.app.Application
 import android.content.res.Configuration

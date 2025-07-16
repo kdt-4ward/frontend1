@@ -1,4 +1,4 @@
-package com.heasolk.frontend2
+package com.heasolk.frontend1
 import expo.modules.splashscreen.SplashScreenManager
 
 import android.os.Build
