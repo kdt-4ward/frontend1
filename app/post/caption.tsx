@@ -12,6 +12,12 @@ import {
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { usePosts } from '../../context/PostContext';
 import { useUser } from '../../context/UserContext';
+import {
+  KeyboardAvoidingView,
+  Platform,
+  TouchableWithoutFeedback,
+  Keyboard
+} from 'react-native';
 
 const API_BASE_URL = 'http://192.168.0.217:8000';
 
@@ -19,6 +25,7 @@ export default function CaptionScreen() {
   const router = useRouter();
   const params = useLocalSearchParams();
   const isEdit = !!params.editId;
+  const [isSubmitting, setIsSubmitting] = useState(false);  
 
   const { userInfo } = useUser();
   const { draftPost, setDraftPost } = usePosts();
@@ -44,6 +51,8 @@ export default function CaptionScreen() {
   }, []);
 
   const handleSubmit = async () => {
+    if (isSubmitting) return;
+
     if (!imageList || imageList.length === 0) {
       Alert.alert('이미지를 먼저 선택해주세요!');
       return;
@@ -53,6 +62,7 @@ export default function CaptionScreen() {
       Alert.alert('로그인이 필요합니다');
       return;
     }
+    setIsSubmitting(true);
 
     const url = isEdit
       ? `${API_BASE_URL}/post/${params.editId}`
@@ -76,25 +86,45 @@ export default function CaptionScreen() {
 
       if (!response.ok) throw new Error('서버 오류');
 
+      const data = await response.json();
+      const postId = isEdit
+        ? params.editId
+        : data.post_id || data.id;  // 서버 응답에 따라 다름
+
       Alert.alert(isEdit ? '수정 완료!' : '업로드 완료!', '', [
         {
           text: '확인',
           onPress: () => {
-            router.replace('/tabpost');
+            if (isEdit) {
+              router.replace({
+                pathname: '/post/[id]',
+                params: { id: String(postId) }
+              });
+            } else {
+              router.replace('/tabpost');
+            }
             setTimeout(() => {
               setDraftPost({ images: [], caption: '', author: '' });
+              setIsSubmitting(false);
             }, 300);
           },
         },
       ]);
+      
     } catch (error) {
       Alert.alert('업로드 실패', '다시 시도해주세요');
       console.error('요청 실패:', error);
+      setIsSubmitting(false);
     }
   };
 
   return (
-    <View style={styles.container}>
+    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+    <KeyboardAvoidingView
+      style={styles.container}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      keyboardVerticalOffset={80}
+    >
       <FlatList
         data={imageList}
         horizontal
@@ -117,11 +147,27 @@ export default function CaptionScreen() {
         />
       </View>
 
-      <TouchableOpacity style={styles.postButton} onPress={handleSubmit}>
-        <Text style={styles.postText}>{isEdit ? '수정하기' : '게시하기'}</Text>
+      <TouchableOpacity
+        style={[
+          styles.postButton,
+          isSubmitting && { opacity: 0.6 }, // 등록 중엔 흐리게 표시
+        ]}
+        onPress={handleSubmit}
+        disabled={isSubmitting} // ✅ 등록/수정 중에는 버튼 비활성화
+      >
+        <Text style={styles.postText}>
+          {isEdit
+            ? isSubmitting
+              ? '수정 중...'
+              : '수정하기'
+            : isSubmitting
+              ? '게시 중...'
+              : '게시하기'}
+        </Text>
       </TouchableOpacity>
-    </View>
-  );
+    </KeyboardAvoidingView>
+  </TouchableWithoutFeedback>
+);
 }
 
 const styles = StyleSheet.create({

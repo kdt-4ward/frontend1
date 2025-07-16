@@ -1,9 +1,33 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, StyleSheet, Modal, Button } from "react-native";
+import { View, Text, StyleSheet, Modal, TouchableOpacity } from "react-native";
 import { useEmotionContext } from "../../context/EmotionContext";
 import { emotionCharacters } from "../../constants/emotionCharacters";
 import EmotionRecordFlow from "../../components/EmotionRecordFlow";
-import { Calendar, DateData } from "react-native-calendars";
+import { Calendar, DateData, LocaleConfig } from "react-native-calendars";
+import { Ionicons } from "@expo/vector-icons";
+
+LocaleConfig.locales['ko'] = {
+  monthNames: [
+    '1월', '2월', '3월', '4월', '5월', '6월',
+    '7월', '8월', '9월', '10월', '11월', '12월'
+  ],
+  monthNamesShort: [
+    '1월', '2월', '3월', '4월', '5월', '6월',
+    '7월', '8월', '9월', '10월', '11월', '12월'
+  ],
+  dayNames: [
+    '일요일', '월요일', '화요일', '수요일', '목요일', '금요일', '토요일'
+  ],
+  dayNamesShort: ['일', '월', '화', '수', '목', '금', '토'],
+  today: '오늘'
+};
+LocaleConfig.defaultLocale = 'ko';
+
+function formatMonthDay(dateStr: string) {
+  // dateStr: '2025-07-15'
+  const [year, month, day] = dateStr.split("-");
+  return `${parseInt(month, 10)}월 ${parseInt(day, 10)}일`;
+}
 
 // 감정 캐릭터 id로 label/color 찾는 함수
 function getCharacterInfo(id: string) {
@@ -11,25 +35,37 @@ function getCharacterInfo(id: string) {
 }
 
 export default function FeelingsScreen() {
-  const { records, todayRecord, selectedDate, setSelectedDate } = useEmotionContext();
-  const [showRecordFlow, setShowRecordFlow] = useState(!todayRecord);
+  const { records, todayRecord, selectedDate, setSelectedDate, loading } = useEmotionContext();
+  const [showRecordFlow, setShowRecordFlow] = useState(false);
   const [detailDate, setDetailDate] = useState<string | null>(selectedDate);
   const [editMode, setEditMode] = useState(false);
 
   // 오늘 날짜(항상 최신)
   const today = new Date().toISOString().slice(0, 10);
 
+
+
+
   // 오늘 기록 유무 변화시 자동으로 감정 기록 플로우 제어
   useEffect(() => {
+    if (loading) {
+      setShowRecordFlow(false);
+      return;
+    }
     setShowRecordFlow(!todayRecord);
   }, [todayRecord]);
 
   // 날짜 클릭 핸들러
   const onDayPress = (day: DateData) => {
+    if (day.dateString > today) return; // 오늘 이후면 아무 동작도 안 함
+
     setDetailDate(day.dateString);
     setSelectedDate(day.dateString);
-    setEditMode(false); // 날짜 클릭하면 항상 수정모드 해제
-  };
+    if (!records[day.dateString]) {
+      setEditMode(true); // ← 이 코드만 추가!
+    } else {
+      setEditMode(false);
+    }  };
 
   // 마킹 데이터: 기록 있는 날짜만 색칠/도트
   const markedDates = Object.fromEntries(
@@ -49,7 +85,26 @@ export default function FeelingsScreen() {
       },
     ])
   );
-
+  // 31일까지 반복해서 오늘 이후 날짜면 스타일 추가
+  for (let i = 1; i <= 365; i++) {
+    const date = new Date();
+    date.setDate(date.getDate() + i);
+    const ds = date.toISOString().slice(0, 10);
+    if (!markedDates[ds]) {
+      markedDates[ds] = {
+        customStyles: {
+          container: {
+            backgroundColor: "transparent",
+            borderRadius: 16
+          },
+          text: {
+            color: "#bbb",
+            fontWeight: "bold"
+          }
+        }
+      };
+    }
+}
   // 현재 선택된 날짜의 기록(있으면)
   const detail = detailDate && records[detailDate] ? records[detailDate] : null;
   const charInfo = detail ? getCharacterInfo(detail.basic) : null;
@@ -63,10 +118,39 @@ export default function FeelingsScreen() {
   return (
     <View style={{ flex: 1, paddingTop: 32 }}>
       <Calendar
-        style={{ marginHorizontal: 10, borderRadius: 16 }}
+        monthFormat={'yyyy년 M월'}
+        style={{ 
+          marginHorizontal: 12,
+          borderRadius: 22,
+          backgroundColor: "#fff",
+          elevation: 5,
+          shadowColor: "#4077F3",
+          shadowOpacity: 0.08,
+          shadowRadius: 12,
+          shadowOffset: { width: 0, height: 3 } 
+        }}
         markingType="custom"
         markedDates={markedDates}
         onDayPress={onDayPress}
+        theme={{
+          backgroundColor: "#fff",
+          calendarBackground: "#fff",
+          textSectionTitleColor: "#222",  // 요일 색
+          textSectionTitleDisabledColor: "#bbb",
+          selectedDayBackgroundColor: "#4077F3",
+          selectedDayTextColor: "#fff",
+          todayTextColor: "#ff6347",
+          dayTextColor: "#222",
+          textDisabledColor: "#bbb",
+          arrowColor: "#4077F3",
+          monthTextColor: "#2b3f6c",
+          textMonthFontWeight: "bold",
+          textMonthFontSize: 20,
+          textDayFontWeight: "600",
+          textDayHeaderFontWeight: "bold",
+          textDayFontSize: 16,
+          textDayHeaderFontSize: 15,
+            }}
       />
 
       {/* 상세 기록 패널 */}
@@ -74,8 +158,15 @@ export default function FeelingsScreen() {
         {detail ? (
           // 기록이 있을 때
           <>
-            <Text style={{ fontSize: 18, fontWeight: "bold", marginBottom: 6 }}>
-              {detail.date} 감정 기록
+            <TouchableOpacity
+              onPress={() => setEditMode(true)}
+              style={{position: "absolute", top: 14, right: 14, zIndex: 2}}
+              hitSlop={10}
+            >
+              <Ionicons name="pencil" size={22} color="#4077F3" />
+            </TouchableOpacity>
+            <Text style={{ fontSize: 18, fontWeight: "bold", marginBottom: 6, paddingRight: 38 }}>
+              {formatMonthDay(detail.date)}
             </Text>
             <View style={{
               flexDirection: "row",
@@ -100,12 +191,13 @@ export default function FeelingsScreen() {
               <Text style={{ fontSize: 16 }}>{charInfo?.label || detail.basic}</Text>
             </View>
             <Text style={{ fontSize: 15, marginBottom: 5 }}>
-              세부 감정: {detail.details.join(", ")}
+              {detail.details.join(", ")}
             </Text>
-            <Text style={{ color: "#888", fontSize: 12, marginBottom: 8 }}>
-              기록 시간: {detail.time}
-            </Text>
-            <Button title="수정" onPress={() => setEditMode(true)} />
+            {detail.memo && (
+              <Text style={{ fontSize: 15, color: "#406", marginBottom: 7 }}>
+                Memo: {detail.memo}
+              </Text>
+            )}
           </>
         ) : (
           // 기록이 없을 때
@@ -113,22 +205,9 @@ export default function FeelingsScreen() {
             <Text style={{ color: "#bbb", marginTop: 14 }}>
               날짜를 선택하면 감정 기록이 표시됩니다.
             </Text>
-            {/* 👉 과거 & 기록 없는 날에는 "감정 기록하기" 버튼 노출 */}
-            {canWritePastRecord && (
-              <View style={{ marginTop: 16, alignItems: "center" }}>
-                <Button title="감정 기록하기" onPress={() => setEditMode(true)} />
-              </View>
-            )}
           </>
         )}
       </View>
-
-      {/* 오늘 감정 기록이 없고 플로우가 안 열려 있을 때 진입 버튼(오늘만!) */}
-      {!todayRecord && !showRecordFlow && !editMode && detailDate === today && (
-        <View style={{ marginTop: 28, alignItems: "center" }}>
-          <Button title="감정 기록하기" onPress={() => setShowRecordFlow(true)} />
-        </View>
-      )}
 
       {/* 감정 기록 플로우(모달, 입력·수정 모두 지원) */}
       <Modal
