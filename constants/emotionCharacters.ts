@@ -1,6 +1,7 @@
 // 나중에 image 컴포넌트로 그림 캐릭터로 교체가능
 
-import { BasicEmotion } from '../context/EmotionContext';
+import { BasicEmotion } from "@/atoms/emotionAtoms";
+
 
 export interface EmotionCharacter {
   id: BasicEmotion;
