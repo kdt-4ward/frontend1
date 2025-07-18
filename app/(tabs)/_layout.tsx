@@ -5,7 +5,6 @@ import { useColorScheme } from '../../components/useColorScheme';
 import { useClientOnlyValue } from '../../components/useClientOnlyValue';
 import { Colors } from '../../constants/Colors';
 import { IconSymbol } from '../../components/ui/IconSymbol';
-import { EmotionProvider } from '../../context/EmotionContext';
 import { View } from 'react-native';
 
 function TabBarIcon(props: {
