@@ -60,7 +60,7 @@ export const EmotionProvider: React.FC<{ children: React.ReactNode }> = ({ child
         setRecords(rec);
         setLoading(false);
       });
-  }, [userInfo?.user_id]);
+  }, []);
 
   const addOrUpdateRecord = (record: EmotionRecord) => {
     setRecords((prev) => ({

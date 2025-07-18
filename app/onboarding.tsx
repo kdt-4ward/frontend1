@@ -29,6 +29,12 @@ export default function OnboardingScreen() {
   const userInfo = useAtomValue(userAtom);
 
   useEffect(() => {
+    setUser(null);
+    setCouple(null);
+    console.log("Onboarding 초기화", userInfo);
+  }, []);
+
+  useEffect(() => {
     if (step !== "couple" || !userInfo?.user_id || userInfo.couple_id) return;
 
     setPolling(true);
@@ -62,7 +68,7 @@ export default function OnboardingScreen() {
     try {
       const kakaoRes = await login();
       await setKakaoTokens(kakaoRes.accessToken, kakaoRes.refreshToken);
-      console.log("카카오 로그인 성공, 토큰 저장 완료", kakaoRes.accessToken, kakaoRes.refreshToken);
+      // console.log("카카오 로그인 성공, 토큰 저장 완료", kakaoRes.accessToken, kakaoRes.refreshToken);
 
       // 백엔드에 카카오 accessToken 전달, JWT 획득
       const backendRes = await fetch(`${backendBaseUrl}/auth/kakao-login`, {
@@ -72,14 +78,23 @@ export default function OnboardingScreen() {
       });
       const { access_token, refresh_token } = await backendRes.json();
       await setServiceTokens(access_token, refresh_token);
-      console.log("백엔드 로그인 성공, 토큰 저장 완료", access_token, refresh_token);
+      // console.log("백엔드 로그인 성공, 토큰 저장 완료", access_token, refresh_token);
 
       const res = await apiFetch('/auth/me', { method: 'GET' });
       const userInfo = await res.json();
       setUser(userInfo);
-      console.log("유저 정보:", userInfo);
+      // console.log("유저 정보:", userInfo);
       setStep(userInfo.couple_id ? "select" : "couple");
-      if (userInfo.couple_id) router.replace('/(tabs)/home');
+      // 2. 커플 정보 가져와서 jotai에 저장
+      if (userInfo.couple_id) {
+        const coupleRes = await apiFetch(`/couple/info/${userInfo.couple_id}`);
+        if (coupleRes.ok) {
+          const coupleInfo = await coupleRes.json();
+          setCouple(coupleInfo);
+          // console.log("커플 연결 성공:", coupleInfo);
+          router.replace('/(tabs)/home');
+        }
+      }
     } catch (error) {
       alert('카카오 로그인 실패');
       console.error(error);
@@ -123,7 +138,16 @@ export default function OnboardingScreen() {
       const userData = { user_id, nickname, couple_id, email, profile_image };
       setUser(userData);
       setStep(couple_id ? "select" : "couple");
-      if (couple_id) router.replace('/(tabs)/home');
+      // 2. 커플 정보 가져와서 jotai에 저장
+      if (couple_id) {
+        const coupleRes = await apiFetch(`/couple/info/${couple_id}`);
+        if (coupleRes.ok) {
+          const coupleInfo = await coupleRes.json();
+          setCouple(coupleInfo);
+          // console.log("커플 연결 성공:", coupleInfo);
+          router.replace('/(tabs)/home');
+        }
+      }
     } catch (err) {
       alert('로그인 에러');
       console.error(err);
@@ -157,7 +181,7 @@ export default function OnboardingScreen() {
         if (coupleRes.ok) {
           const coupleInfo = await coupleRes.json();
           setCouple(coupleInfo);
-          console.log("커플 연결 성공:", coupleInfo);
+          // console.log("커플 연결 성공:", coupleInfo);
         }
       }
       router.replace('/(tabs)/home');
@@ -166,7 +190,7 @@ export default function OnboardingScreen() {
     }
   };
 
-  console.log("userInfo in onboarding:", userInfo);
+  // console.log("userInfo in onboarding:", userInfo);
 
   // ------ UI 단계별 분기 -------
   if (step === "select") {
@@ -241,11 +265,36 @@ export default function OnboardingScreen() {
 
 
 const styles = StyleSheet.create({
-  container: { flex: 1, alignItems: "center", justifyContent: "center", backgroundColor: "#fff" },
-  welcome: { fontSize: 22, fontWeight: "bold", marginBottom: 12, textAlign: "center" },
-  subtitle: { fontSize: 16, color: "#888", textAlign: "center" },
-  input: { width: 260, borderBottomWidth: 1, borderColor: '#bbb', fontSize: 18, marginVertical: 10, padding: 8 },
-  button: { width: 300, height: 90, resizeMode: 'contain' },
+  container: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#fff"
+  },
+  welcome: {
+    fontSize: 22,
+    fontWeight: "bold",
+    marginBottom: 12,
+    textAlign: "center"
+  },
+  subtitle: {
+    fontSize: 16,
+    color: "#888",
+    textAlign: "center"
+  },
+  input: {
+    width: 260,
+    borderBottomWidth: 1,
+    borderColor: '#bbb',
+    fontSize: 18,
+    marginVertical: 10,
+    padding: 8
+  },
+  button: {
+    width: 300,
+    height: 90,
+    resizeMode: 'contain'
+  },
   copyButton: {
     backgroundColor: '#f6e043',
     paddingVertical: 8,
@@ -253,5 +302,9 @@ const styles = StyleSheet.create({
     borderRadius: 18,
     marginTop: 8,
   },
-  copyButtonText: { fontWeight: 'bold', fontSize: 16, color: '#333' },
+  copyButtonText: {
+    fontWeight: 'bold',
+    fontSize: 16,
+    color: '#333'
+  },
 });

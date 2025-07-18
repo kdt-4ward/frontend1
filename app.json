@@ -16,7 +16,14 @@
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.heasolk.frontend1"
+      "bundleIdentifier": "com.heasolk.frontend1",
+      "infoPlist": {
+        "CFBundleURLTypes": [
+          {
+            "CFBundleURLSchemes": ["kakaob9d21a45b36f2d40d5e7be95091dbd4e"]
+          }
+        ]
+      }
     },
     "android": {
       "adaptiveIcon": {

@@ -1,19 +1,19 @@
 import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
-import { useFonts } from 'expo-font';
+// import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 
 import { useColorScheme } from '../hooks/useColorScheme';
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { getKeyHashAndroid, initializeKakaoSDK } from '@react-native-kakao/core';
 import 'react-native-reanimated';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { Text } from 'react-native';
 import { getServiceAccessToken } from '../utils/auth';
 import { useSetAtom } from 'jotai';
 import { userAtom } from '@/atoms/userAtom';
 import { apiFetch } from '@/utils/api';
-import React from 'react';
 
 export { ErrorBoundary } from 'expo-router';
 
@@ -59,6 +59,14 @@ export default function RootLayout() {
           <Stack.Screen name="onboarding" options={{ headerShown: false }} />
           <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
           <Stack.Screen name="+not-found" />
+          <Stack.Screen
+            name="chat/aiChat"
+            options={{
+              title: '',
+              headerTitle: () => <Text style={{fontWeight:'bold', fontSize:18}}>AI챗</Text>,
+              headerBackTitle: '홈',
+            }}
+          />
         </Stack>
         <StatusBar style="auto" />
       </ThemeProvider>

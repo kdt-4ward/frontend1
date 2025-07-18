@@ -27,8 +27,7 @@
       <dict>
         <key>CFBundleURLSchemes</key>
         <array>
-          <string>frontend1</string>
-          <string>com.heasolk.frontend2</string>
+          <string>kakaob9d21a45b36f2d40d5e7be95091dbd4e</string>
         </array>
       </dict>
       <dict>
@@ -36,14 +35,6 @@
         <array>
           <string>exp+frontend1</string>
         </array>
-      </dict>
-      <dict>
-        <key>CFBundleURLSchemes</key>
-        <array>
-          <string>kakaob9d21a45b36f2d40d5e7be95091dbd4e</string>
-        </array>
-        <key>CFBundleURLName</key>
-        <string>Kakao</string>
       </dict>
     </array>
     <key>CFBundleVersion</key>
@@ -65,6 +56,16 @@
       <key>NSAllowsLocalNetworking</key>
       <true/>
     </dict>
+    <key>NSCameraUsageDescription</key>
+    <string>Allow $(PRODUCT_NAME) to access your camera</string>
+    <key>NSFaceIDUsageDescription</key>
+    <string>Allow $(PRODUCT_NAME) to access your Face ID biometric data.</string>
+    <key>NSMicrophoneUsageDescription</key>
+    <string>Allow $(PRODUCT_NAME) to access your microphone</string>
+    <key>NSPhotoLibraryAddUsageDescription</key>
+    <string>Allow $(PRODUCT_NAME) to save photos</string>
+    <key>NSPhotoLibraryUsageDescription</key>
+    <string>Allow $(PRODUCT_NAME) to access your photos</string>
     <key>NSUserActivityTypes</key>
     <array>
       <string>$(PRODUCT_BUNDLE_IDENTIFIER).expo.index_route</string>
