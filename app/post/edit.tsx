@@ -6,17 +6,19 @@ import {
 import * as ImagePicker from 'expo-image-picker';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import DraggableFlatList, { RenderItemParams } from 'react-native-draggable-flatlist';
-import { usePosts } from '../../context/PostContext';
-import { useUser } from '../../context/UserContext';
+import { useSetAtom } from 'jotai';
+import { draftPostAtom } from '@/atoms/postAtom';
+import { useAtomValue } from 'jotai';
+import { userAtom } from '@/atoms/userAtom';
+import { backendBaseUrl } from '@/constants/app.constants';
 
-const API_BASE_URL = 'http://192.168.0.217:8000';
 const MAX_IMAGES = 4;
 const screenWidth = Dimensions.get('window').width;
 
 export default function EditScreen() {
   const router = useRouter();
-  const { setDraftPost } = usePosts();
-  const { userInfo } = useUser();
+  const setDraftPost = useSetAtom(draftPostAtom);
+  const userInfo = useAtomValue(userAtom);
   const params = useLocalSearchParams();
   const isEdit = !!params.editId;
 
@@ -29,7 +31,7 @@ export default function EditScreen() {
     const fetchPost = async () => {
       if (isEdit && params.editId) {
         try {
-          const res = await fetch(`${API_BASE_URL}/post/${params.editId}`);
+          const res = await fetch(`${backendBaseUrl}/post/${params.editId}`);
           const data = await res.json();
           setImageList(data.images || []);
           setDraftPost({
@@ -57,7 +59,7 @@ export default function EditScreen() {
     } as any);
   
     try {
-      const response = await fetch("http://192.168.0.217:8000/upload/image/", {
+      const response = await fetch(`${backendBaseUrl}/upload/image/`, {
         method: "POST",
         body: formData,
         headers: {

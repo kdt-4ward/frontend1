@@ -6,9 +6,11 @@ import {
   Platform
 } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { useUser } from '@/context/UserContext';
+import { useAtomValue } from 'jotai';
+import { userAtom } from '@/atoms/userAtom';
+import { backendBaseUrl } from '@/constants/app.constants';
 
-const API_BASE_URL = 'http://192.168.0.217:8000';
+
 const SCREEN_WIDTH = Dimensions.get('window').width;
 type Comment = {
   comment_id: number;
@@ -27,7 +29,7 @@ type Post = {
   images: string[];
 };
 export default function PostDetailScreen() {
-  const { userInfo } = useUser();
+  const userInfo = useAtomValue(userAtom);
   const userId = userInfo?.user_id;
   const router = useRouter();
   const { id } = useLocalSearchParams();
@@ -44,11 +46,11 @@ export default function PostDetailScreen() {
     if (loading) return;
     setLoading(true);
     try {
-      const postRes = await fetch(`${API_BASE_URL}/post/${id}`);
+      const postRes = await fetch(`${backendBaseUrl}/post/${id}`);
       const postData = await postRes.json();
       setPost(postData);
 
-      const commentRes = await fetch(`${API_BASE_URL}/comment/${id}`);
+      const commentRes = await fetch(`${backendBaseUrl}/comment/${id}`);
       const commentData = await commentRes.json();
       setComments(Array.isArray(commentData) ? commentData : []);
     } catch (e) {
@@ -89,7 +91,7 @@ export default function PostDetailScreen() {
 
     setIsCommentSubmitting(true);
     try {
-      await fetch(`${API_BASE_URL}/comment`, {
+      await fetch(`${backendBaseUrl}/comment`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
@@ -109,7 +111,7 @@ export default function PostDetailScreen() {
   const handleDeleteComment = async (commentId: number, commentUserId: string) => {
     if (commentUserId !== userId) return;
     try {
-      await fetch(`${API_BASE_URL}/comment/${commentId}?user_id=${userId}`, {
+      await fetch(`${backendBaseUrl}/comment/${commentId}?user_id=${userId}`, {
         method: 'DELETE',
       });
       debounceFetch();
@@ -130,7 +132,7 @@ export default function PostDetailScreen() {
       {
         text: '삭제', style: 'destructive', onPress: async () => {
           try {
-            const res = await fetch(`${API_BASE_URL}/post/${post.post_id}`, { method: 'DELETE' });
+            const res = await fetch(`${backendBaseUrl}/post/${post.post_id}`, { method: 'DELETE' });
             if (res.ok) {
               Alert.alert('삭제 완료', '', [{ text: '확인', onPress: () => router.replace('/tabpost') }]);
             } else {
