@@ -1,11 +1,17 @@
-import { Link, Stack } from 'expo-router';
+import { Link, router, Stack } from 'expo-router';
 import { StyleSheet } from 'react-native';
 
 import { ThemedText } from '../components/ThemedText';
 import { ThemedView } from '../components/ThemedView';
-import React from 'react';
+import React, { useEffect } from 'react';
 
 export default function NotFoundScreen() {
+  useEffect(() => {
+    setTimeout(() => {
+      // Redirect to onboarding after 3 seconds
+      router.replace('/(tabs)/home');
+    }, 100);
+  }, []);
   return (
     <>
       <Stack.Screen options={{ title: 'Oops!' }} />
