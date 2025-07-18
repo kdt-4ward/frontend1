@@ -1,4 +1,4 @@
-import React, {  } from 'react';
+import React, { useEffect } from 'react';
 import { View, Text, Button, StyleSheet} from "react-native";
 import { router } from 'expo-router';
 import { userAtom } from '@/atoms/userAtom';
@@ -7,9 +7,11 @@ import { useAtomValue } from 'jotai';
 export default function HomeScreen() {
   const user = useAtomValue(userAtom);
 
-  if (!user || !user.couple_id) {
-    return router.replace('/onboarding');
-  }
+  useEffect(() => {
+    if (!user || !user.couple_id) {
+      return router.replace('/onboarding');
+    }
+  }, [user, router]);
 
   return (
     <View style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>

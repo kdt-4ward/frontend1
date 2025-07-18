@@ -5,8 +5,8 @@ import React, { useEffect, useState } from "react";
 import { View, Text, Button, Image, StyleSheet } from "react-native";
 import { useAtomValue, useSetAtom } from 'jotai';
 import { userAtom } from '@/atoms/userAtom';
-import { coupleAtom } from "@/atoms/coupleAtom";
-import { apiFetch } from "@/utils/api";
+import { coupleAtom } from '@/atoms/coupleAtom';
+import { apiFetch } from '@/utils/api';
 
 export default function MyPage() {
   const router = useRouter();
