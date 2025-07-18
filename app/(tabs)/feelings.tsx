@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { View, Text, StyleSheet, Modal, TouchableOpacity } from "react-native";
-import { useEmotionContext } from "../../context/EmotionContext";
 import { emotionCharacters } from "../../constants/emotionCharacters";
 import EmotionRecordFlow from "../../components/EmotionRecordFlow";
 import { Calendar, DateData, LocaleConfig } from "react-native-calendars";
 import { Ionicons } from "@expo/vector-icons";
+import { useAtom } from "jotai";
+import { recordsAtom, todayRecordAtom, selectedDateAtom, loadingAtom } from "../../atoms/emotionAtoms";
 
 LocaleConfig.locales['ko'] = {
   monthNames: [
@@ -35,7 +36,11 @@ function getCharacterInfo(id: string) {
 }
 
 export default function FeelingsScreen() {
-  const { records, todayRecord, selectedDate, setSelectedDate, loading } = useEmotionContext();
+  const [records] = useAtom(recordsAtom);
+  const [todayRecord] = useAtom(todayRecordAtom);
+  const [selectedDate, setSelectedDate] = useAtom(selectedDateAtom);
+  const [loading, setLoading] = useAtom(loadingAtom);
+
   const [showRecordFlow, setShowRecordFlow] = useState(false);
   const [detailDate, setDetailDate] = useState<string | null>(selectedDate);
   const [editMode, setEditMode] = useState(false);

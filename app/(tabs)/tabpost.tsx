@@ -4,16 +4,15 @@ import {
 } from 'react-native';
 import { useRouter, useFocusEffect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { useUser } from '../../context/UserContext';
-import { PostProvider, usePosts } from '../../context/PostContext';
 import PostThumbnail from '../../components/PostThumbnail';
 import { Pressable } from 'react-native-gesture-handler';
-
-const API_BASE_URL = 'http://192.168.0.217:8000';
+import { useAtomValue } from 'jotai';
+import { userAtom } from '@/atoms/userAtom';
+import { backendBaseUrl } from '@/constants/app.constants';
 
 export default function TabPostScreen() {
   const router = useRouter();
-  const { userInfo } = useUser();
+  const userInfo = useAtomValue(userAtom);
   const coupleId = userInfo?.couple_id;
   const [remotePosts, setRemotePosts] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
@@ -22,7 +21,7 @@ export default function TabPostScreen() {
     if (!coupleId) return;
     setLoading(true);
     try {
-      const response = await fetch(`${API_BASE_URL}/post/couple/${coupleId}`);
+      const response = await fetch(`${backendBaseUrl}/post/couple/${coupleId}`);
       const data = await response.json();
       setRemotePosts(Array.isArray(data) ? data : []);
     } catch (e) {
@@ -64,7 +63,6 @@ export default function TabPostScreen() {
   ];
 
   return (
-    <PostProvider>
       <View style={{ flex: 1 }}>
         <FlatList
           data={combinedPosts}
@@ -85,7 +83,6 @@ export default function TabPostScreen() {
           <Ionicons name="add" size={28} color="#fff" />
         </Pressable>
       </View>
-    </PostProvider>
   );
 }
 

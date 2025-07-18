@@ -10,16 +10,17 @@ import {
   FlatList,
 } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
-import { usePosts } from '../../context/PostContext';
-import { useUser } from '../../context/UserContext';
 import {
   KeyboardAvoidingView,
   Platform,
   TouchableWithoutFeedback,
   Keyboard
 } from 'react-native';
-
-const API_BASE_URL = 'http://192.168.0.217:8000';
+import { useAtom } from 'jotai';
+import { draftPostAtom } from '@/atoms/postAtom';
+import { useAtomValue } from 'jotai';
+import { userAtom } from '@/atoms/userAtom';
+import { backendBaseUrl } from '@/constants/app.constants';
 
 export default function CaptionScreen() {
   const router = useRouter();
@@ -27,8 +28,8 @@ export default function CaptionScreen() {
   const isEdit = !!params.editId;
   const [isSubmitting, setIsSubmitting] = useState(false);  
 
-  const { userInfo } = useUser();
-  const { draftPost, setDraftPost } = usePosts();
+  const userInfo = useAtomValue(userAtom);
+  const [draftPost, setDraftPost] = useAtom(draftPostAtom);
   console.log('🔥 userInfo =', userInfo);
 
   const imageList = draftPost.images;
@@ -65,8 +66,8 @@ export default function CaptionScreen() {
     setIsSubmitting(true);
 
     const url = isEdit
-      ? `${API_BASE_URL}/post/${params.editId}`
-      : `${API_BASE_URL}/post/`;
+      ? `${backendBaseUrl}/post/${params.editId}`
+      : `${backendBaseUrl}/post/`;
     const method = isEdit ? 'PUT' : 'POST';
 
     try {
@@ -120,54 +121,54 @@ export default function CaptionScreen() {
 
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-    <KeyboardAvoidingView
-      style={styles.container}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      keyboardVerticalOffset={80}
-    >
-      <FlatList
-        data={imageList}
-        horizontal
-        keyExtractor={(item, index) => `${item}-${index}`}
-        renderItem={({ item }) => (
-          <Image source={{ uri: item }} style={styles.image} resizeMode="cover" />
-        )}
-        contentContainerStyle={styles.imageRow}
-        showsHorizontalScrollIndicator={false}
-      />
-
-      <View style={{ flex: 1 }}>
-        <Text style={styles.label}>게시글 내용</Text>
-        <TextInput
-          multiline
-          placeholder="사진과 함께 추억을 남겨보세요!"
-          value={caption}
-          onChangeText={setCaption}
-          style={styles.input}
-        />
-      </View>
-
-      <TouchableOpacity
-        style={[
-          styles.postButton,
-          isSubmitting && { opacity: 0.6 }, // 등록 중엔 흐리게 표시
-        ]}
-        onPress={handleSubmit}
-        disabled={isSubmitting} // ✅ 등록/수정 중에는 버튼 비활성화
+      <KeyboardAvoidingView
+        style={styles.container}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        keyboardVerticalOffset={80}
       >
-        <Text style={styles.postText}>
-          {isEdit
-            ? isSubmitting
-              ? '수정 중...'
-              : '수정하기'
-            : isSubmitting
-              ? '게시 중...'
-              : '게시하기'}
-        </Text>
-      </TouchableOpacity>
-    </KeyboardAvoidingView>
-  </TouchableWithoutFeedback>
-);
+        <FlatList
+          data={imageList}
+          horizontal
+          keyExtractor={(item, index) => `${item}-${index}`}
+          renderItem={({ item }) => (
+            <Image source={{ uri: item }} style={styles.image} resizeMode="cover" />
+          )}
+          contentContainerStyle={styles.imageRow}
+          showsHorizontalScrollIndicator={false}
+        />
+
+        <View style={{ flex: 1 }}>
+          <Text style={styles.label}>게시글 내용</Text>
+          <TextInput
+            multiline
+            placeholder="사진과 함께 추억을 남겨보세요!"
+            value={caption}
+            onChangeText={setCaption}
+            style={styles.input}
+          />
+        </View>
+
+        <TouchableOpacity
+          style={[
+            styles.postButton,
+            isSubmitting && { opacity: 0.6 }, // 등록 중엔 흐리게 표시
+          ]}
+          onPress={handleSubmit}
+          disabled={isSubmitting} // ✅ 등록/수정 중에는 버튼 비활성화
+        >
+          <Text style={styles.postText}>
+            {isEdit
+              ? isSubmitting
+                ? '수정 중...'
+                : '수정하기'
+              : isSubmitting
+                ? '게시 중...'
+                : '게시하기'}
+          </Text>
+        </TouchableOpacity>
+      </KeyboardAvoidingView>
+    </TouchableWithoutFeedback>
+  );
 }
 
 const styles = StyleSheet.create({

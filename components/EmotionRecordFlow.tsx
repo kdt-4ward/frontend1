@@ -3,19 +3,21 @@ import React, { useState, useEffect } from "react";
 import EmotionStep1 from "./EmotionStep1";
 import EmotionStep2 from "./EmotionStep2";
 import EmotionStep3 from "./EmotionStep3";
-import { useEmotionContext } from "../context/EmotionContext";
 import { emotionCharacters } from "../constants/emotionCharacters";
 import { View, TouchableOpacity } from "react-native";
 import { Ionicons } from '@expo/vector-icons';
-import { useUser } from "../context/UserContext";
-
+import { useAtom } from "jotai";
+import { userAtom } from "@/atoms/userAtom";
+import { recordsAtom, addOrUpdateRecordAtom } from "@/atoms/emotionAtoms";
+import { backendBaseUrl } from "@/constants/app.constants";
 interface Props {
   onComplete?: () => void;
   editDate?: string;
 }
 
 export default function EmotionRecordFlow({ onComplete, editDate }: Props) {
-  const { records, addOrUpdateRecord } = useEmotionContext();
+  const [records] = useAtom(recordsAtom);
+  const [, addOrUpdateRecord] = useAtom(addOrUpdateRecordAtom);
 
   // 수정모드면 해당 날짜 기록, 아니면 오늘 날짜 기록
   const date = editDate ?? new Date().toISOString().slice(0, 10);
@@ -41,9 +43,9 @@ export default function EmotionRecordFlow({ onComplete, editDate }: Props) {
       setSelectedCharacter(null);
       setMemo("");
     }
-  }, [editDate]);
+  }, [editDate, records]);
 
-  const { userInfo } = useUser();
+  const [userInfo] = useAtom(userAtom);
 
   // 1단계 캐릭터 선택
   const handleCharacterSelect = (character: { id: string; label: string; color: string }) => {
@@ -66,7 +68,7 @@ export default function EmotionRecordFlow({ onComplete, editDate }: Props) {
     const recordedAt = `${date} 00:00:00`; // 문자열로 보냄!
 
     try {
-      await fetch("http://192.168.0.217:8000/emotion/log", {
+      await fetch(`${backendBaseUrl}/emotion/log`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
