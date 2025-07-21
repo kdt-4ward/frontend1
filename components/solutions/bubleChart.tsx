@@ -168,10 +168,10 @@ export default function BubbleChart({ weeklyData }: BubbleChartProps) {
   ];
 
   const animatedCircleProps = [
-    useAnimatedProps(() => ({ r: 40 + animatedRadii[0].value * 1.4 })),
-    useAnimatedProps(() => ({ r: 40 + animatedRadii[1].value * 1.4 })),
-    useAnimatedProps(() => ({ r: 40 + animatedRadii[2].value * 1.4 })),
-    useAnimatedProps(() => ({ r: 40 + animatedRadii[3].value * 1.4 })),
+    useAnimatedProps(() => ({ r: 40 + animatedRadii[0].value * 1.3 })),
+    useAnimatedProps(() => ({ r: 40 + animatedRadii[1].value * 1.3 })),
+    useAnimatedProps(() => ({ r: 40 + animatedRadii[2].value * 1.3 })),
+    useAnimatedProps(() => ({ r: 40 + animatedRadii[3].value * 1.3 })),
   ];
 
   const animatedGroupProps = [

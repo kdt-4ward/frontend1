@@ -8,26 +8,7 @@ import weeklyData from '@/test_data/weekly_solution_test.json'; // 실제 파일
 import { makeStackedBarChartData } from '@/utils/Chart_test_data';
 
 export default function SolutionPreviewScreen() {
-  const data1 = [
-    { label: '애정표현', value: 4, color: '#F47C7C' },
-    { label: '배려', value: 3, color: '#FFD56F' },
-    { label: '적극성', value: 2, color: '#A1DE93' },
-    { label: '갈등', value: 1, color: '#6A67CE' },
-  ];
 
-  const data2 = [
-    { label: '애정표현', value: 3, color: '#F47C7C' },
-    { label: '배려', value: 2, color: '#FFD56F' },
-    { label: '적극성', value: 1, color: '#A1DE93' },
-    { label: '갈등', value: 5, color: '#6A67CE' },
-  ];
-
-  const data3 = [
-    { label: '애정표현', value: 1, color: '#F47C7C' },
-    { label: '배려', value: 1, color: '#FFD56F' },
-    { label: '적극성', value: 1, color: '#A1DE93' },
-    { label: '갈등', value: 1, color: '#6A67CE' },
-  ];
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
