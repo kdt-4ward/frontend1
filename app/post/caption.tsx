@@ -102,7 +102,7 @@ export default function CaptionScreen() {
                 params: { id: String(postId) }
               });
             } else {
-              router.replace('/tabpost');
+              router.replace('/screens/tabpost');
             }
             setTimeout(() => {
               setDraftPost({ images: [], caption: '', author: '' });

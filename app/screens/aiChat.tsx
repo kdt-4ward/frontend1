@@ -3,11 +3,14 @@ import { useAtomValue } from 'jotai';
 import { userAtom } from '@/atoms/userAtom';
 import { coupleAtom } from '@/atoms/coupleAtom';
 import { View, Text, TextInput, Button, FlatList, KeyboardAvoidingView,
-        Platform, ActivityIndicator, StyleSheet } from "react-native";
+        Platform, ActivityIndicator, StyleSheet, 
+        Pressable} from "react-native";
 import { apiFetch } from "@/utils/api";
 import { backendBaseUrl } from '@/constants/app.constants';
 import 'react-native-get-random-values';
 import { v4 as uuidv4 } from 'uuid';
+import handleLongPress from '@/hooks/handleLongPress';
+import DotTyping from '@/hooks/dotTyping';
 
 
 interface Message {
@@ -20,17 +23,42 @@ interface Message {
 
 export default function AiChatScreen() {
   const user = useAtomValue(userAtom);
-  const couple = useAtomValue(coupleAtom);
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const flatListRef = useRef<FlatList>(null);
+  const inputRef = useRef<TextInput>(null);
 
-  console.log("home 에서 coupleID:", couple?.couple_id);
+  console.log("home 에서 coupleID:", user?.couple_id);
+
+  useEffect(() => {
+    // 초기 메시지 로드
+    const loadInitialMessages = async () => {
+      if (!user?.user_id || !user?.couple_id) return;
+      try {
+        const res = await fetch(`${backendBaseUrl}/chat/history/recent?user_id=${encodeURIComponent(user.user_id)}&couple_id=${encodeURIComponent(user.couple_id)}`);
+        if (res.ok) {
+          const text = await res.json()
+          const messages = (text?.data?.messages || []).map(msg => ({
+            id: msg.id,
+            user_id: user.user_id,
+            role: msg.role,
+            content: msg.content,
+            created_at: msg.created_at,
+          }));
+          setMessages(messages);
+          console.log("메시지:", messages);
+        }
+      } catch (error) {
+        console.error("초기 메시지 로드 에러:", error);
+      }
+    };
+    loadInitialMessages();
+  }, []);
 
   // AI와 채팅 (스트리밍)
   const sendMessageToAI = async () => {
-    if (!user?.user_id || !couple?.couple_id || !input.trim()) return;
+    if (!user?.user_id || !user?.couple_id || !input.trim()) return;
     const userMsg: Message = {
       id: Date.now().toString() + '-' + uuidv4(),
       user_id: user.user_id,
@@ -39,8 +67,9 @@ export default function AiChatScreen() {
     };
     setMessages(prev => [...prev, userMsg]);
     setInput("");
+    inputRef.current?.focus();
     setLoading(true);
-    console.log("보낼 user_id:", user?.user_id, "보낼 couple_id:", couple?.couple_id, "입력값:", input);
+    console.log("보낼 user_id:", user?.user_id, "보낼 couple_id:", user?.couple_id, "입력값:", input);
 
     let aiMsgId = "ai-" + Date.now() + '-' + uuidv4();
 
@@ -51,7 +80,7 @@ export default function AiChatScreen() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           user_id: user.user_id,
-          couple_id: couple.couple_id,
+          couple_id: user.couple_id,
           message: userMsg.content,
         }),
       });
@@ -90,31 +119,63 @@ export default function AiChatScreen() {
   }, [messages.length]);
 
   // 렌더링
-  const renderItem = ({ item }: { item: Message }) => (
-    <View style={[styles.message, item.role === "user" ? styles.me : styles.ai]}>
-      <Text style={styles.sender}>{item.role === "assistant" ? "AI" : "나"}</Text>
-      <Text style={styles.content}>{item.content}</Text>
-    </View>
+  const renderItem = ({ item }: { item: Message & { isLoading?: boolean } }) => (
+    <Pressable disabled={item.isLoading} onLongPress={() => handleLongPress(item.content)}>
+      <View style={[
+        styles.message,
+        item.role === "user" ? styles.me : styles.ai,
+        item.isLoading && { opacity: 0.7 }
+      ]}>
+        <Text style={styles.sender}>
+          {item.role === "assistant"
+            ? (item.isLoading ? "AI" : "AI")
+            : "나"}
+        </Text>
+        {item.isLoading
+          ? <DotTyping />
+          : <Text style={styles.content}>{item.content}</Text>
+        }
+      </View>
+    </Pressable>
   );
 
   return (
     <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.select({ ios: "padding", android: undefined })}>
       <FlatList
         ref={flatListRef}
-        data={messages}
+        data={
+          loading
+            ? [
+                ...messages,
+                {
+                  id: "ai-loading",
+                  user_id: "ai",
+                  role: "assistant",
+                  content: "",
+                  created_at: "",
+                  isLoading: true,
+                },
+              ]
+            : messages
+        }
         keyExtractor={(item) => item.id}
         renderItem={renderItem}
         contentContainerStyle={{ padding: 12 }}
+        onContentSizeChange={() => flatListRef.current?.scrollToEnd({ animated: true })}
+        scrollEnabled={true}
       />
-      {loading && <ActivityIndicator size="small" color="#222" style={{ marginBottom: 10 }} />}
+      {/* {loading && <ActivityIndicator size="small" color="#222" style={{ marginBottom: 10 }} />} */}
       <View style={styles.inputBox}>
         <TextInput
+          ref={inputRef}
           style={styles.input}
           value={input}
           onChangeText={setInput}
           onSubmitEditing={sendMessageToAI}
           placeholder="AI와 대화해보세요!"
           editable={!loading}
+          autoFocus={true}
+          blurOnSubmit={false}  // 엔터 쳐도 포커스 유지 (iOS)
         />
         <Button title="전송" onPress={sendMessageToAI} disabled={!input.trim() || loading} />
       </View>
