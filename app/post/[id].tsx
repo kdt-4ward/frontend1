@@ -134,7 +134,7 @@ export default function PostDetailScreen() {
           try {
             const res = await fetch(`${backendBaseUrl}/post/${post.post_id}`, { method: 'DELETE' });
             if (res.ok) {
-              Alert.alert('삭제 완료', '', [{ text: '확인', onPress: () => router.replace('/tabpost') }]);
+              Alert.alert('삭제 완료', '', [{ text: '확인', onPress: () => router.replace('/screens/tabpost') }]);
             } else {
               Alert.alert('삭제 실패', '잠시 후 다시 시도해보세요');
             }

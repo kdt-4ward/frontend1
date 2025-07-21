@@ -14,6 +14,7 @@ import { getServiceAccessToken } from '../utils/auth';
 import { useSetAtom } from 'jotai';
 import { userAtom } from '@/atoms/userAtom';
 import { apiFetch } from '@/utils/api';
+import * as Notifications from 'expo-notifications';
 
 export { ErrorBoundary } from 'expo-router';
 
@@ -48,6 +49,15 @@ export default function RootLayout() {
     SplashScreen.hideAsync();
   }, []);
 
+  useEffect(() => {
+    (async () => {
+      const { status } = await Notifications.requestPermissionsAsync();
+      if (status !== 'granted') {
+        alert('알림 권한이 필요합니다!');
+      }
+    })();
+  }, []);
+
   if (!initialRoute) {
     return null;
   }
@@ -57,13 +67,38 @@ export default function RootLayout() {
       <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
         <Stack initialRouteName={initialRoute}>
           <Stack.Screen name="onboarding" options={{ headerShown: false }} />
+          <Stack.Screen name="survey/surveyQuestions.ts" options={{ headerShown: false }} />
           <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
           <Stack.Screen name="+not-found" />
           <Stack.Screen
-            name="chat/aiChat"
+            name="screens/aiChat"
             options={{
               title: '',
               headerTitle: () => <Text style={{fontWeight:'bold', fontSize:18}}>AI챗</Text>,
+              headerBackTitle: '홈',
+            }}
+          />
+          <Stack.Screen
+            name="screens/tabpost" 
+            options={{
+              title: '',
+              headerTitle: () => <Text style={{fontWeight:'bold', fontSize:18}}>게시글 작성</Text>,
+              headerBackTitle: '홈',
+            }}
+          />
+          <Stack.Screen
+            name="screens/feelings"
+            options={{
+              title: '',
+              headerTitle: () => <Text style={{fontWeight:'bold', fontSize:18}}>감정 기록</Text>,
+              headerBackTitle: '홈',
+            }}
+          />
+          <Stack.Screen
+            name="screens/solution_preview"
+            options={{
+              title: '',
+              headerTitle: () => <Text style={{fontWeight:'bold', fontSize:18}}>솔루션</Text>,
               headerBackTitle: '홈',
             }}
           />
