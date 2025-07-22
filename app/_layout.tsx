@@ -1,5 +1,4 @@
 import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
-import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
@@ -67,7 +66,7 @@ export default function RootLayout() {
       <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
         <Stack initialRouteName={initialRoute}>
           <Stack.Screen name="onboarding" options={{ headerShown: false }} />
-          <Stack.Screen name="survey/surveyQuestions.ts" options={{ headerShown: false }} />
+          <Stack.Screen name="modal/SurveyModal" options={{ headerShown: false }} />
           <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
           <Stack.Screen name="+not-found" />
           <Stack.Screen
@@ -95,7 +94,7 @@ export default function RootLayout() {
             }}
           />
           <Stack.Screen
-            name="screens/solution_preview"
+            name="solution/solution-preview"
             options={{
               title: '',
               headerTitle: () => <Text style={{fontWeight:'bold', fontSize:18}}>솔루션</Text>,
