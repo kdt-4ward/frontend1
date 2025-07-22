@@ -6,7 +6,7 @@ import { useClientOnlyValue } from '../../components/useClientOnlyValue';
 import { Colors } from '../../constants/Colors';
 import { IconSymbol } from '../../components/ui/IconSymbol';
 import { View } from 'react-native';
-import SurveyModal from '../survey/SurveyModal';
+import SurveyModal from '../modal/SurveyModal';
 import { useAtomValue } from 'jotai';
 import { userAtom } from '@/atoms/userAtom';
 import { backendBaseUrl } from '@/constants/app.constants';
@@ -28,19 +28,26 @@ export default function TabLayout() {
   const unreadCount = useAtomValue(unreadCoupleChatAtom);
   console.log("Badge에 쓰이는 unreadCount:", unreadCount);
 
-  // useEffect(() => {
-  //   // 1. user.survey_done이 없으면 띄우기, 없으면 API 요청으로 응답여부 체크
-  //   async function checkSurvey() {
-  //     const res = await fetch(`${backendBaseUrl}/survey/check?user_id=${user.user_id}`);
-  //     const data = await res.json();
-  //     setSurveyVisible(!data.done);
-  //   }
-  //   checkSurvey();
-  // }, [user.user_id]);
+  useEffect(() => {
+    if (!user?.user_id) return;
+    console.log("유저아이디: ", user.user_id);
+    // 로그인 이후, 설문 응답 여부 확인
+    const checkSurvey = async () => {
+      try {
+        const res = await fetch(`${backendBaseUrl}/survey/check?user_id=${user.user_id}`);
+        const data = await res.json();
+        console.log("설문조사 완료 여부 체크: ", data);
+        setSurveyVisible(!data.done); // done이 false면 모달 ON
+      } catch (e) {
+        console.log("설문조사 완료 여부 체크 에러: ", e);
+      }
+    };
+    checkSurvey();
+  }, [user?.user_id]);
   
   return (
     <View style={{ flex: 1 }}>
-      {/* <SurveyModal visible={surveyVisible} userId={user.user_id} onComplete={() => setSurveyVisible(false)} /> */}
+      <SurveyModal visible={surveyVisible} userId={user?.user_id} onComplete={() => setSurveyVisible(false)} />
       <Tabs
         screenOptions={{
           tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
