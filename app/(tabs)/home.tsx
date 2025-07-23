@@ -37,7 +37,7 @@ export default function HomeScreen() {
       <Button title="AI챗" onPress={() => router.push('/screens/aiChat')} />
       <Button title="감정 기록" onPress={() => router.push('/screens/feelings')} />
       <Button title="게시글 작성" onPress={() => router.push('/screens/tabpost')} />
-      <Button title="주간 솔루션" onPress={() => router.push('/solution/solution-preview')} />
+      <Button title="주간 솔루션" onPress={() => router.push('/screens/solution_preview')} />
     </View>
   );
 }
