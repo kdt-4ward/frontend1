@@ -202,7 +202,7 @@ const styles = StyleSheet.create({
   },
   me: {
     alignSelf: "flex-end",
-    backgroundColor: "#f7e5a6"
+    backgroundColor: "#7493F7"
   },
   ai: {
     alignSelf: "flex-start",

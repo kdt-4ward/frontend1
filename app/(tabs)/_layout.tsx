@@ -58,16 +58,16 @@ export default function TabLayout() {
           name="home"
           options={{
             title: '홈',
-            tabBarIcon: ({ color }) => <IconSymbol size={28} name="house.fill" color={color} />,
+            tabBarIcon: ({ color }) => <TabBarIcon name="home" color={color} />,
           }}
         />
         <Tabs.Screen
           name="coupleChat"
           options={{
-            title: '커플챗',
+            title: '연인톡',
             tabBarIcon: ({ color }) => (
               <View>
-                <IconSymbol size={28} name="paperplane.fill" color={color} />
+                <TabBarIcon name="wechat" color={color} />
                 {unreadCount > 0 && (
                   <Badge value={unreadCount > 99 ? '99+' : unreadCount} status="error" containerStyle={{ position: 'absolute', right: -8, top: -6 }} />
                 )}
@@ -79,7 +79,7 @@ export default function TabLayout() {
           name="mypage"
           options={{
             title: '마이페이지',
-            tabBarIcon: ({ color }) => <TabBarIcon name="smile-o" color={color} />,
+            tabBarIcon: ({ color }) => <TabBarIcon name="user" color={color} />,
           }}
         />
       </Tabs>
