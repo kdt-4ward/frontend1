@@ -9,7 +9,7 @@ import { getKeyHashAndroid, initializeKakaoSDK } from '@react-native-kakao/core'
 import 'react-native-reanimated';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { getServiceAccessToken } from '../utils/auth';
-import { useSetAtom } from 'jotai';
+import { useAtomValue, useSetAtom } from 'jotai';
 import { userAtom } from '@/atoms/userAtom';
 import { apiFetch } from '@/utils/api';
 import * as Notifications from 'expo-notifications';
@@ -23,6 +23,7 @@ export default function RootLayout() {
   const colorScheme = useColorScheme();
   const [initialRoute, setInitialRoute] = useState<string | null>(null);
   const setUser = useSetAtom(userAtom);
+  const user = useAtomValue(userAtom);
 
   useEffect(() => {
     initializeKakaoSDK('b9d21a45b36f2d40d5e7be95091dbd4e');
@@ -73,8 +74,15 @@ export default function RootLayout() {
             name="screens/aiChat"
             options={{
               title: '',
-              headerTitle: () => <Text style={{fontWeight:'bold', fontSize:18}}>AI챗</Text>,
+              headerTitle: () => <Text style={{fontWeight:'bold', fontSize:18}}>러비와 대화하기</Text>,
               headerBackTitle: '홈',
+              headerStyle: {
+                backgroundColor: 'rgba(199, 199, 199, 0.7)',
+              },
+              headerTitleStyle: {},
+              headerShadowVisible: false,
+              presentation: 'transparentModal',
+              gestureDirection: 'vertical',
             }}
           />
           <Stack.Screen
@@ -94,11 +102,18 @@ export default function RootLayout() {
             }}
           />
           <Stack.Screen
-            name="solution/solution-preview"
+            name="screens/solution_preview"
             options={{
               title: '',
               headerTitle: () => <Text style={{fontWeight:'bold', fontSize:18}}>솔루션</Text>,
               headerBackTitle: '홈',
+            }}
+          />
+          <Stack.Screen
+            name="webview/youtubeWebView"
+            options={{
+              title: '',
+              headerTitle: () => <Text style={{fontWeight:'bold', fontSize:18}}>솔루션</Text>,
             }}
           />
         </Stack>

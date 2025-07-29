@@ -21,8 +21,8 @@ export const getServiceAccessToken = () => SecureStore.getItemAsync('service_acc
 export const getServiceRefreshToken = () => SecureStore.getItemAsync('service_refresh_token');
 
 export const removeAllTokens = async () => {
-  await SecureStore.deleteItemAsync('kakao_access_token');
-  await SecureStore.deleteItemAsync('kakao_refresh_token');
+  // await SecureStore.deleteItemAsync('kakao_access_token');
+  // await SecureStore.deleteItemAsync('kakao_refresh_token');
   await SecureStore.deleteItemAsync('service_access_token');
   await SecureStore.deleteItemAsync('service_refresh_token');
 };

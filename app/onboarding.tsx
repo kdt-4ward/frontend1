@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, Button, TouchableOpacity, Image, TextInput, StyleSheet, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
 import { login } from '@react-native-kakao/user';
-import { setKakaoTokens, setServiceTokens } from '../utils/auth';
+import { setServiceTokens } from '../utils/auth';
 import { useAtomValue, useSetAtom } from 'jotai';
 import { userAtom } from '@/atoms/userAtom';
 import { apiFetch } from '@/utils/api';
@@ -22,6 +22,7 @@ export default function OnboardingScreen() {
   const [signupEmail, setSignupEmail] = useState('');
   const [signupPassword, setSignupPassword] = useState('');
   const [polling, setPolling] = useState(false);
+  const [isCoupleCodeEnter, setIsCoupleCodeEnter] = useState(false);
   const setUser = useSetAtom(userAtom);
   const setCouple = useSetAtom(coupleAtom);
   const router = useRouter();
@@ -67,7 +68,7 @@ export default function OnboardingScreen() {
   const onKakaoLogin = async () => {
     try {
       const kakaoRes = await login();
-      await setKakaoTokens(kakaoRes.accessToken, kakaoRes.refreshToken);
+      // await setKakaoTokens(kakaoRes.accessToken, kakaoRes.refreshToken);
       // console.log("카카오 로그인 성공, 토큰 저장 완료", kakaoRes.accessToken, kakaoRes.refreshToken);
 
       // 백엔드에 카카오 accessToken 전달, JWT 획득
@@ -184,6 +185,7 @@ export default function OnboardingScreen() {
           // console.log("커플 연결 성공:", coupleInfo);
         }
       }
+      setIsCoupleCodeEnter(false);
       router.replace('/(tabs)/home');
     } else {
       alert('초대 코드가 유효하지 않습니다.');
@@ -196,14 +198,18 @@ export default function OnboardingScreen() {
   if (step === "select") {
     return (
       <View style={styles.container}>
+        <Image
+          style={{ width: 200, height: 200 }}
+          source={require('@/assets/images/icon.png')}
+          resizeMode="contain"
+        />
         <Text style={styles.welcome}>LuvTune에 오신 걸 환영해요!</Text>
-        <TouchableOpacity onPress={onKakaoLogin} style={{ marginTop: 20 }} activeOpacity={0.7}>
-          <Image source={kakaoLoginButton} style={styles.button} />
+        <TouchableOpacity onPress={onKakaoLogin} style={styles.kakaoButton} activeOpacity={0.7}>
+          <Image source={kakaoLoginButton} style={styles.kakaoImg} />
         </TouchableOpacity>
-        <View style={{ marginTop: 30 }}>
-          <Button title="이메일로 로그인" onPress={() => setStep("login")} />
-          <Button title="이메일로 회원가입" onPress={() => setStep("signup")} />
-        </View>
+        <TouchableOpacity style={[styles.button, { marginTop: 0, marginBottom: 0 }]} onPress={() => setStep("login")}>
+          <Text style={styles.buttonText}>이메일로 로그인</Text>
+        </TouchableOpacity>
       </View>
     );
   }
@@ -215,8 +221,12 @@ export default function OnboardingScreen() {
         <TextInput placeholder="닉네임" value={signupName} onChangeText={setSignupName} style={styles.input} />
         <TextInput placeholder="이메일" value={signupEmail} onChangeText={setSignupEmail} style={styles.input} autoCapitalize="none" />
         <TextInput placeholder="비밀번호" value={signupPassword} onChangeText={setSignupPassword} style={styles.input} secureTextEntry />
-        <Button title="회원가입" onPress={onSignup} />
-        <Button title="이미 계정이 있으신가요? 로그인" onPress={() => setStep("login")} />
+        <TouchableOpacity style={styles.button} onPress={onSignup}>
+          <Text style={{ color: '#fff'}}>회원가입</Text>
+        </TouchableOpacity>
+        <TouchableOpacity onPress={() => setStep("login")}>
+          <Text style={{ color: '#7c7c7c' }}>이미 계정이 있으신가요? 로그인</Text>
+        </TouchableOpacity>
       </View>
     );
   }
@@ -227,9 +237,17 @@ export default function OnboardingScreen() {
         <Text style={styles.welcome}>로그인</Text>
         <TextInput placeholder="이메일" value={email} onChangeText={setEmail} style={styles.input} autoCapitalize="none" />
         <TextInput placeholder="비밀번호" value={password} onChangeText={setPassword} style={styles.input} secureTextEntry />
-        <Button title="로그인" onPress={onLogin} />
-        <Button title="회원가입" onPress={() => setStep("signup")} />
-        <Button title="← 뒤로" onPress={() => setStep("select")} />
+        <TouchableOpacity style={styles.button} onPress={onLogin}>
+          <Text style={styles.buttonText}>로그인</Text>
+        </TouchableOpacity>
+        <View style={styles.bottomNav}>
+          <TouchableOpacity style={{}} onPress={() => setStep("select")}>
+            <Text style={{ color: '#7c7c7c' }}>← 뒤로 돌아가기</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={{}} onPress={() => setStep("signup")}>
+            <Text style={{ color: '#7c7c7c' }}>회원가입</Text>
+          </TouchableOpacity>
+        </View>
       </View>
     );
   }
@@ -239,12 +257,17 @@ export default function OnboardingScreen() {
     if (!userInfo) return <Text>로그인 오류, 새로고침 해주세요</Text>;
     const copyCode = async () => {
       await Clipboard.setStringAsync(myInviteCode);
-      Alert.alert('복사됨', '초대코드가 클립보드에 복사되었습니다.');
+      Alert.alert('커플 코드 복사', '커플 코드가 복사되었어요.\n상대방에게 공유해 주세요!');
     };
     return (
       <View style={styles.container}>
-        <Text style={styles.welcome}>연인과 연결하세요!</Text>
-        <Button title="내 초대코드 생성" onPress={() => handleGenerateCode(userInfo.user_id)} />
+        <Text style={[styles.welcome, { marginBottom: 0 }]}>커플 연결 후</Text>
+        <Text style={[styles.welcome, { marginTop: 3, marginBottom: 30 }]}>러브튠을 시작해 보세요.</Text>
+        <Image
+          style={{ width: 150, height: 150 }}
+          source={require('@/assets/images/luvy5.png')}
+          resizeMode="contain"
+        />
         {myInviteCode ? (
           <View style={{ alignItems: 'center', marginTop: 20 }}>
             <Text>내 초대코드: {myInviteCode}</Text>
@@ -253,9 +276,21 @@ export default function OnboardingScreen() {
             </TouchableOpacity>
           </View>
         ) : null}
-        <Text style={{ marginTop: 20 }}>상대방 초대코드 입력</Text>
-        <TextInput value={inviteCode} onChangeText={setInviteCode} placeholder="초대코드 입력" style={styles.input} />
-        <Button title="커플 연결" onPress={() => handleJoin(userInfo.user_id)} />
+        <TouchableOpacity style={styles.button} onPress={() => handleGenerateCode(userInfo.user_id)}>
+          <Text style={styles.copyButtonText}>내 초대코드 생성하기</Text>
+        </TouchableOpacity>
+        {isCoupleCodeEnter ? (
+          <>
+            <TextInput value={inviteCode} onChangeText={setInviteCode} placeholder="상대방 초대코드 입력하기" style={styles.input} />
+            <TouchableOpacity style={[styles.button, {marginTop: 12}]} onPress={() => handleJoin(userInfo.user_id)}>
+              <Text style={styles.buttonText}>연결하기</Text>
+            </TouchableOpacity>
+          </>
+        ) : (
+          <TouchableOpacity style={styles.InviteButton} onPress={() => setIsCoupleCodeEnter(true)}>
+            <Text style={styles.InviteButtonText}>상대방 초대코드 입력하기</Text>
+          </TouchableOpacity>
+        )}
       </View>
     );
   }
@@ -274,8 +309,9 @@ const styles = StyleSheet.create({
   welcome: {
     fontSize: 22,
     fontWeight: "bold",
-    marginBottom: 12,
-    textAlign: "center"
+    textAlign: "center",
+    marginTop: 20,
+    marginBottom: 40,
   },
   subtitle: {
     fontSize: 16,
@@ -283,28 +319,103 @@ const styles = StyleSheet.create({
     textAlign: "center"
   },
   input: {
-    width: 260,
+    width: 300,
     borderBottomWidth: 1,
     borderColor: '#bbb',
-    fontSize: 18,
+    fontSize: 16,
     marginVertical: 10,
     padding: 8
   },
+  kakaoImg: {
+    width: 300,
+    height: 50,
+    resizeMode: 'contain',
+  },
+  kakaoButton: {
+    marginVertical: 20,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
+    borderRadius: 5,
+  },
   button: {
     width: 300,
-    height: 90,
-    resizeMode: 'contain'
+    height: 50,
+    backgroundColor: '#7493F7',
+    borderRadius: 5,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 40,
+    marginBottom: 12,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
+  },
+  buttonText: {
+    fontSize: 16,
+    fontWeight: 500,
+    color: '#fff',
+  },
+  InviteButton: {
+    width: 300,
+    height: 50,
+    backgroundColor: '#fff',
+    borderColor: '#7493F7',
+    borderRadius: 5,
+    borderWidth: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 8,
+    marginBottom: 12,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
+  },
+  InviteButtonText: {
+    fontSize: 16,
+    fontWeight: 500,
+    color: '#000',
   },
   copyButton: {
-    backgroundColor: '#f6e043',
+    backgroundColor: '#e5cf2d',
     paddingVertical: 8,
     paddingHorizontal: 24,
     borderRadius: 18,
     marginTop: 8,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
   },
   copyButtonText: {
-    fontWeight: 'bold',
+    fontWeight: 500,
     fontSize: 16,
-    color: '#333'
+    color: '#fff'
+  },
+  bottomNav: {
+    width: 300,
+    display: 'flex',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
   },
 });

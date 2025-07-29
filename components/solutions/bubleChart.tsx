@@ -8,6 +8,8 @@ import Animated, {
 } from 'react-native-reanimated';
 import { AnimatedCircle, AnimatedG } from '@/utils/animatedSvg';
 import { makeBubbleChartData } from '@/utils/Chart_test_data';
+import { useAtomValue } from 'jotai';
+import { coupleAtom } from '@/atoms/coupleAtom';
 
 type BubbleChartProps = {
   weeklyData: any; // 주간 통계 데이터(json)
@@ -15,7 +17,8 @@ type BubbleChartProps = {
 
 export default function BubbleChart({ weeklyData }: BubbleChartProps) {
   // ⚡️ 1. 데이터 변환
-  const emotions = makeBubbleChartData(weeklyData);
+  const couple = useAtomValue(coupleAtom);
+  const emotions = makeBubbleChartData(weeklyData, couple.user1.user_id, couple.user2.user_id);
 
   // ⚡️ 2. 애니메이션 state 선언 (버블 개수는 4개로 고정)
   const animatedRadii = [
