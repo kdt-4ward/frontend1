@@ -5,7 +5,7 @@ import { coupleAtom } from '@/atoms/coupleAtom';
 import { unreadCoupleChatAtom } from '@/atoms/notificationAtom';
 import {
   View, Text, TextInput, Button, FlatList, KeyboardAvoidingView,
-  Platform, ActivityIndicator, StyleSheet, Alert, Pressable
+  Platform, ActivityIndicator, StyleSheet, Alert, Pressable, Image, TouchableOpacity
 } from "react-native";
 import { backendBaseUrl } from '@/constants/app.constants';
 import { apiFetch } from '@/utils/api';
@@ -13,6 +13,11 @@ import handleLongPress from '@/hooks/handleLongPress';
 import { useIsFocused } from '@react-navigation/native';
 import { useSegments } from 'expo-router';
 import * as Notifications from 'expo-notifications';
+import LinearGradient from 'react-native-linear-gradient';
+import { v4 as uuidv4 } from 'uuid';
+import dayjs from "dayjs";
+import "dayjs/locale/ko"; // 한글 요일
+dayjs.locale('ko'); 
 
 interface Message {
   id: string;
@@ -55,7 +60,7 @@ export default function CoupleChatScreen() {
         const data = await res.json();
         setMessages(
           data.map((msg: any) => ({
-            id: msg.id ? String(msg.id) : `${msg.created_at}-${msg.user_id}`,
+            id: msg.id ? String(msg.id) : `${msg.created_at}-${msg.user_id}-${uuidv4()}`,
             user_id: msg.user_id,
             content: msg.content,
             created_at: msg.created_at,
@@ -176,49 +181,123 @@ export default function CoupleChatScreen() {
     setLoading(false);
   };
 
-  // 스크롤 맨 아래로
-  useEffect(() => {
-    setTimeout(() => {
-      flatListRef.current?.scrollToEnd({ animated: true });
-    }, 100);
-  }, [messages.length]);
+  function groupMessagesWithDates(messages) {
+    if (!messages.length) return [];
+
+    const result = [];
+    let lastDate = null;
+
+    messages.forEach((msg) => {
+      const msgDate = dayjs(msg.created_at).format("YYYY-MM-DD");
+      if (lastDate !== msgDate) {
+        result.push({
+          type: "date",
+          date: msgDate,
+          display: dayjs(msg.created_at).format("YYYY년 M월 D일 dddd"),
+          id: `date-${msgDate}`
+        });
+        lastDate = msgDate;
+      }
+      result.push({ ...msg, type: "message" });
+    });
+
+    return result;
+  }
 
   // 메시지 렌더
-  const renderItem = ({ item }: { item: Message }) => (
-    <Pressable onLongPress={() => handleLongPress(item.content)}>
-      <View style={[styles.message, item.role === "user" ? styles.me : styles.ai]}>
-        <Text style={styles.sender}>{item.role === "user" ? "나" : "상대"}</Text>
-        <Text style={styles.content}>{item.content}</Text>
-      </View>
-    </Pressable>
-  );
+  const displayList = groupMessagesWithDates(messages);
+
+  // 스크롤 맨 아래로
+  useEffect(() => {
+    if (displayList.length > 0) {
+      setTimeout(() => {
+        // 아주 큰 값(예: 999999)은 FlatList의 제일 아래로 내림
+        flatListRef.current?.scrollToOffset({ offset: 9999999999, animated: true });
+      }, 100);
+    }
+  }, [displayList.length]);
+
+  const renderItem = ({ item }) => {
+    if (item.type === "date") {
+      return (
+        <View style={{alignItems:'center', marginVertical: 14}}>
+          <View style={{
+            backgroundColor: "#f1f1f5",
+            borderRadius: 16,
+            paddingHorizontal: 12,
+            paddingVertical: 4,
+            flexDirection: "row",
+            alignItems: "center"
+          }}>
+            <Image source={require('@/assets/images/icon-calendar.png')} style={styles.calendarDivder}/>
+            <Text style={{ fontSize: 13, color: "#888" }}>{item.display}</Text>
+          </View>
+        </View>
+      );
+    }
+    // 메시지 아이템
+    const timeText = dayjs(item.created_at).format("A h:mm");
+    return (
+      <Pressable onLongPress={() => handleLongPress(item.content)}>
+        <View style={[
+          styles.message,
+          item.role === "user" ? styles.me : styles.ai
+        ]}>
+          <Text style={styles.content}>{item.content}</Text>
+          <Text style={{ fontSize: 11, color: "#888", alignSelf: "flex-end", marginTop: 2 }}>{timeText}</Text>
+        </View>
+      </Pressable>
+    );
+  };
+
 
   return (
-    <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.select({ ios: "padding", android: undefined })}>
-      <FlatList
-        ref={flatListRef}
-        data={messages}
-        keyExtractor={item => item.id}
-        renderItem={renderItem}
-        contentContainerStyle={{ padding: 12 }}
-      />
-      {loading && <ActivityIndicator size="small" color="#222" style={{ marginBottom: 10 }} />}
-      <View style={styles.inputBox}>
-        <TextInput
-          style={styles.input}
-          value={input}
-          onChangeText={setInput}
-          onSubmitEditing={sendMessage}
-          placeholder="메시지를 입력하세요"
-          editable={!loading}
+    <LinearGradient
+      colors={['#D5DFFD', '#fff']}  // 시작~끝 색상
+      style={styles.container}
+      start={{ x: 0, y: 0 }}
+      end={{ x: 0, y: 1 }}
+    >
+      <KeyboardAvoidingView style={styles.container} behavior={Platform.select({ ios: "padding", android: undefined })}>
+        <FlatList
+          ref={flatListRef}
+          data={displayList}
+          keyExtractor={item => item.id}
+          renderItem={renderItem}
+          contentContainerStyle={{ padding: 12 }}
+          onContentSizeChange={() => {
+            flatListRef.current?.scrollToOffset({ offset: 50000, animated: true });
+          }}
         />
-        <Button title="전송" onPress={sendMessage} disabled={!input.trim() || loading} />
-      </View>
-    </KeyboardAvoidingView>
+        {loading && <ActivityIndicator size="small" color="#222" style={{ marginBottom: 10 }} />}
+        <View style={styles.inputBox}>
+          <TextInput
+            style={styles.input}
+            value={input}
+            onChangeText={setInput}
+            onSubmitEditing={sendMessage}
+            placeholder="메시지를 입력하세요"
+            placeholderTextColor="#7493F7" 
+            editable={!loading}
+          />
+          <TouchableOpacity onPress={sendMessage} disabled={!input.trim() || loading}>
+            <Image
+              style={{ width: 36, height: 36, tintColor: '#9AB0F8' }}
+              source={require('@/assets/images/icon-send.png')}
+              resizeMode="contain"
+            />
+          </TouchableOpacity>
+        </View>
+      </KeyboardAvoidingView>
+    </LinearGradient>
   );
 }
 
 const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: 'transparent',
+  },
   message: {
     padding: 10,
     borderRadius: 12,
@@ -227,11 +306,11 @@ const styles = StyleSheet.create({
   },
   me: {
     alignSelf: "flex-end",
-    backgroundColor: "#f7e5a6"
+    backgroundColor: "#FFA9DB"
   },
   ai: {
     alignSelf: "flex-start",
-    backgroundColor: "#e6e6f7"
+    backgroundColor: "#fff"
   },
   sender: {
     fontWeight: "bold",
@@ -244,17 +323,25 @@ const styles = StyleSheet.create({
   inputBox: {
     flexDirection: "row",
     alignItems: "center",
-    padding: 10,
-    backgroundColor: "#fff"
+    paddingVertical: 12,
+    paddingHorizontal: 19,
+    backgroundColor: "#F6F8FE",
+    paddingBottom: 100,
   },
   input: {
     flex: 1,
     borderWidth: 1,
-    borderColor: "#ddd",
-    borderRadius: 18,
-    paddingHorizontal: 14,
-    paddingVertical: 7,
+    borderColor: '#9AB0F8',
+    borderRadius: 20,
+    paddingVertical: 12,
+    paddingHorizontal: 19,
     marginRight: 6,
-    fontSize: 16
+    fontSize: 16,
+  },
+  calendarDivder: { 
+    width: 14,
+    height: 14,
+    tintColor: '#999',
+    marginRight: 5,
   },
 });

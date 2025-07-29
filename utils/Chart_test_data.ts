@@ -7,6 +7,9 @@
 //   conflict: '갈등',
 // };
 
+import { coupleAtom } from "@/atoms/coupleAtom";
+import { useAtomValue } from "jotai";
+
 // const COLORS = ['#79366F', '#C87BAA', '#EAC7DA', '#F7D9E5'];
 // const DEFAULT_X = [100, 250, 210, 310];
 // const DEFAULT_Y = [130, 90, 200, 190];
@@ -79,7 +82,7 @@ const DEFAULT_X = [100, 250, 210, 310];
 const DEFAULT_Y = [130, 90, 200, 190];
 
 // json: 백엔드에서 온 user_stats 구조
-export function makeBubbleChartData(json: any) {
+export function makeBubbleChartData(json: any, user1: string, user2: string) {
   const emotionKeys = Object.keys(EMOTION_LABELS);
 
   // 실제 user id는 "1", "2"로 옴
@@ -87,8 +90,8 @@ export function makeBubbleChartData(json: any) {
   if (userIds.length < 2) return []; // 데이터 없을 때
 
   const combined = emotionKeys.map((key) => {
-    const v1 = json.user_stats["1"]?.[key]?.total_count || 0;
-    const v2 = json.user_stats["2"]?.[key]?.total_count || 0;
+    const v1 = json.user_stats[user1]?.[key]?.total_count || 0;
+    const v2 = json.user_stats[user2]?.[key]?.total_count || 0;
     return {
       key,
       count: v1 + v2,

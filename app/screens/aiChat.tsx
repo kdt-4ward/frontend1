@@ -1,16 +1,18 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useAtomValue } from 'jotai';
 import { userAtom } from '@/atoms/userAtom';
-import { coupleAtom } from '@/atoms/coupleAtom';
 import { View, Text, TextInput, Button, FlatList, KeyboardAvoidingView,
         Platform, ActivityIndicator, StyleSheet, 
-        Pressable} from "react-native";
-import { apiFetch } from "@/utils/api";
+        Pressable,
+        TouchableOpacity,
+        Image } from "react-native";
+// import { apiFetch } from "@/utils/api";
 import { backendBaseUrl } from '@/constants/app.constants';
 import 'react-native-get-random-values';
 import { v4 as uuidv4 } from 'uuid';
 import handleLongPress from '@/hooks/handleLongPress';
 import DotTyping from '@/hooks/dotTyping';
+import { BlurView } from 'expo-blur';
 
 
 interface Message {
@@ -28,6 +30,7 @@ export default function AiChatScreen() {
   const [loading, setLoading] = useState(false);
   const flatListRef = useRef<FlatList>(null);
   const inputRef = useRef<TextInput>(null);
+  const [inputHeight, setInputHeight] = useState(44); // 기본 높이
 
   console.log("home 에서 coupleID:", user?.couple_id);
 
@@ -140,7 +143,8 @@ export default function AiChatScreen() {
   );
 
   return (
-    <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.select({ ios: "padding", android: undefined })}>
+    <KeyboardAvoidingView style={styles.container} behavior={Platform.select({ ios: "padding", android: undefined })}>
+      <BlurView intensity={45} tint="light" style={StyleSheet.absoluteFill} />
       <FlatList
         ref={flatListRef}
         data={
@@ -161,23 +165,35 @@ export default function AiChatScreen() {
         keyExtractor={(item) => item.id}
         renderItem={renderItem}
         contentContainerStyle={{ padding: 12 }}
-        onContentSizeChange={() => flatListRef.current?.scrollToEnd({ animated: true })}
+        onContentSizeChange={() => flatListRef.current?.scrollToOffset({ offset: 999999, animated: true })}
         scrollEnabled={true}
       />
       {/* {loading && <ActivityIndicator size="small" color="#222" style={{ marginBottom: 10 }} />} */}
       <View style={styles.inputBox}>
         <TextInput
           ref={inputRef}
-          style={styles.input}
+          style={[styles.input, { height: inputHeight }, loading && {backgroundColor: '#e4ebff9a'}]}
           value={input}
           onChangeText={setInput}
           onSubmitEditing={sendMessageToAI}
           placeholder="AI와 대화해보세요!"
+          multiline={true}
+          maxLength={500}
           editable={!loading}
+          onContentSizeChange={e =>
+            setInputHeight(Math.max(44, e.nativeEvent.contentSize.height))
+          }
+          textAlignVertical="top"
           autoFocus={true}
           blurOnSubmit={false}  // 엔터 쳐도 포커스 유지 (iOS)
         />
-        <Button title="전송" onPress={sendMessageToAI} disabled={!input.trim() || loading} />
+        <TouchableOpacity onPress={sendMessageToAI} disabled={!input.trim() || loading}>
+          <Image
+            style={{ width: 36, height: 36, tintColor: loading ? '#e4ebff9a' : '#E4EBFF' }}
+            source={require('@/assets/images/icon-send.png')}
+            resizeMode="contain"
+          />
+        </TouchableOpacity>
       </View>
     </KeyboardAvoidingView>
   );
@@ -192,7 +208,8 @@ export const options = {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#fff"
+    backgroundColor: 'rgba(0,0,0,0.3)',
+    paddingBottom: 100,
   },
   message: {
     padding: 10,
@@ -202,35 +219,49 @@ const styles = StyleSheet.create({
   },
   me: {
     alignSelf: "flex-end",
-    backgroundColor: "#7493F7"
+    backgroundColor: "rgba(116,147,247,0.6)"
   },
   ai: {
     alignSelf: "flex-start",
-    backgroundColor: "#e6e6f7"
+    backgroundColor: "rgba(230,230,247,0.6)"
   },
   sender: {
     fontWeight: "bold",
     marginBottom: 2,
-    fontSize: 13
+    fontSize: 13,
   },
   content: {
     fontSize: 16
   },
-  inputBox: {
-    flexDirection: "row",
-    alignItems: "center",
-    padding: 10,
-    paddingBottom: 40,
-    backgroundColor: "#fff"
-  },
+  inputBox: Platform.select({
+    ios: {
+      flexDirection: "row",
+      alignItems: "center",
+      borderRadius: 20,
+      paddingVertical: 12,
+      paddingHorizontal: 19,
+      marginBottom: 40,
+      borderWidth: 0,
+    },
+    android: {
+      flexDirection: "row",
+      alignItems: "center",
+      borderRadius: 20,
+      paddingVertical: 12,
+      paddingHorizontal: 19,
+      paddingBottom: 0,
+      borderWidth: 0,
+    },
+  }),
   input: {
     flex: 1,
     borderWidth: 1,
     borderColor: "#ddd",
-    borderRadius: 18,
-    paddingHorizontal: 14,
-    paddingVertical: 7,
+    borderRadius: 20,
+    paddingVertical: 12,
+    paddingHorizontal: 19,
     marginRight: 6,
-    fontSize: 16
+    fontSize: 16,
+    backgroundColor: '#E4EBFF'
   },
 });

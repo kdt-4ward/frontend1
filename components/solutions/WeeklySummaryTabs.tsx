@@ -18,17 +18,20 @@ export default function WeeklySummaryTabs({}: WeeklySummaryTabsProps) {
   useEffect(() => {
     if (!user?.couple_id) return;
     setLoading(true);
-    apiFetch(`/analysis/weekly/couple/${user.couple_id}`)
+    apiFetch(`/analysis/weekly/couple/analysis/${user.couple_id}`)
       .then(res => res.json())
       .then(data => {
-        const result = data.data?.[0]?.result;
-        setPositives(result?.["긍정포인트"] || []);
-        setNegatives(result?.["부정포인트"] || []);
-        setSummary(result?.["요약"] || '');
+        const result = data.data.result;
+        console.log(result);
+        setPositives(result?.["positive_points"] || []);
+        setNegatives(result?.["negative_points"] || []);
+        setSummary(JSON.parse(result?.["summary"]) || '');
+        console.log("Summary: ", summary)
       })
       .catch(e => console.error('주간 리포트 데이터 불러오기 실패', e))
       .finally(() => setLoading(false));
   }, [user?.couple_id]);
+
 
   if (loading) return <ActivityIndicator style={{ marginTop: 20 }} />;
 
@@ -38,14 +41,14 @@ export default function WeeklySummaryTabs({}: WeeklySummaryTabsProps) {
       <View style={styles.card}>
         {positives.length === 0
           ? <Text>데이터가 없습니다.</Text>
-          : positives.map((text, i) => <Text key={i} style={styles.cardText}>{text}</Text>)
+          : positives.map((text, i) => <Text key={i} style={styles.cardText}>• {text}</Text>)
         }
       </View>
       <Text style={styles.sectionTitle}>부정 포인트</Text>
       <View style={styles.card}>
         {negatives.length === 0
           ? <Text>데이터가 없습니다.</Text>
-          : negatives.map((text, i) => <Text key={i} style={styles.cardText}>{text}</Text>)
+          : negatives.map((text, i) => <Text key={i} style={styles.cardText}>• {text}</Text>)
         }
       </View>
       <Text style={styles.sectionTitle}>요약</Text>
@@ -68,13 +71,15 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   card: {
-    backgroundColor: '#f9f9f9',
+    backgroundColor: '#e9e9e9',
     padding: 16,
     borderRadius: 12,
+    width: '100%',
   },
   cardText: {
     fontSize: 14,
     lineHeight: 20,
     marginBottom: 10,
+    width: '100%'
   },
 });

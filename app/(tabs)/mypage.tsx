@@ -2,7 +2,7 @@ import { removeAllTokens } from "../../utils/auth";
 import { logout, unlink } from "@react-native-kakao/user";
 import { useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
-import { View, Text, Button, Image, StyleSheet } from "react-native";
+import { View, Text, Button, Image, StyleSheet, TouchableOpacity } from "react-native";
 import { useAtomValue, useSetAtom } from 'jotai';
 import { userAtom } from '@/atoms/userAtom';
 import { coupleAtom } from '@/atoms/coupleAtom';
@@ -12,6 +12,7 @@ export default function MyPage() {
   const router = useRouter();
   const user = useAtomValue(userAtom);
   const coupleInfo = useAtomValue(coupleAtom);
+  const setUser = useSetAtom(userAtom);
   const setCouple = useSetAtom(coupleAtom);
 
   useEffect(() => {
@@ -36,9 +37,11 @@ export default function MyPage() {
 
   const onLogout = async () => {
     try {
-      const res = await logout();
+      // await logout();
       await removeAllTokens();
-      console.log("카카오 로그아웃 성공: ", res);
+      await setUser({});
+      await setCouple({});
+      console.log("카카오 로그아웃 성공: ");
       router.replace('/onboarding');
     } catch (error) {
       console.error("로그아웃 실패: ", error);
@@ -46,28 +49,49 @@ export default function MyPage() {
   };
 
   return (
-    <View>
-      <View>
-        <Text>환영합니다, {user?.nickname}님!</Text>
-        {user?.profile_image && <Image source={{ uri: user?.profile_image }} style={styles.profileImage} />}
-        <Text>커플ID: {coupleInfo?.couple_id}</Text>
-        {user?.user_id === coupleInfo?.user1?.user_id && (
-          <>
-            <Text>상대 연인: {coupleInfo?.user2?.nickname}</Text>
-            {coupleInfo?.user2?.profile_image && <Image source={{ uri: coupleInfo.user2.profile_image }} style={styles.profileImage} />}
-          </>
-        )}
-        {user?.user_id === coupleInfo?.user2?.user_id && (
-          <>
-            <Text>상대 연인: {coupleInfo?.user1?.nickname}</Text>
-            {coupleInfo?.user1?.profile_image && <Image source={{ uri: coupleInfo.user1.profile_image }} style={styles.profileImage} />}
-          </>
-        )}
+    <View style={styles.container}>
+      <View style={styles.profileBox}>
+        <View style={styles.profileView}>
+          <Text>나</Text>
+          <Text style={styles.coupleName}>{user?.nickname}</Text>
+        </View>
+        <Image
+          style={{ width: 110, height: 110 }}
+          source={require('@/assets/images/splash-icon.png')}
+          resizeMode="contain"
+        />
+        <View style={styles.profileView}>
+          <Text>연인</Text>
+          {user?.user_id === coupleInfo?.user1?.user_id && (
+            <Text style={styles.coupleName}>{coupleInfo?.user2?.nickname}</Text>
+          )}
+          {user?.user_id === coupleInfo?.user2?.user_id && (
+            <Text style={styles.coupleName}>{coupleInfo?.user1?.nickname}</Text>
+          )}
+        </View>
       </View>
-      <Button title={'로그아웃'} onPress={onLogout} />
-      <Button title={'연결 해제'} onPress={() => {
-        unlink().then(() => console.log("연결 해제 성공")).catch(console.error);
-      }} />
+      <View style={styles.dividerThick} />
+      <View style={styles.settingsContainer}>
+        <Text style={styles.settingsTitle}>정보</Text>
+        <TouchableOpacity style={styles.settingsButton}>
+          <Text style={styles.settingsText}>닉네임 변경하기</Text>
+        </TouchableOpacity>
+        <View style={styles.divider} />
+        <TouchableOpacity style={styles.settingsButton} onPress={onLogout}>
+          <Text style={styles.settingsText}>로그아웃</Text>
+        </TouchableOpacity>
+      </View>
+      <View style={styles.dividerThick} />
+      <View style={styles.settingsContainer}>
+        <Text style={styles.settingsTitle}>알림</Text>
+        <TouchableOpacity style={styles.settingsButton}>
+          <Text style={styles.settingsText}>닉네임 변경하기</Text>
+        </TouchableOpacity>
+        <View style={styles.divider} />
+        <TouchableOpacity style={styles.settingsButton} onPress={onLogout}>
+          <Text style={styles.settingsText}>로그아웃</Text>
+        </TouchableOpacity>
+      </View>
     </View>
   );
 }
@@ -76,49 +100,72 @@ const styles = StyleSheet.create({
   container: { 
     flex: 1,
     alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: "#fff" 
+    backgroundColor: "#fff",
   },
-  welcome: {
+  profileBox: {
+    display: 'flex',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-around',
+    width: '70%',
+    marginVertical: 40,
+  },
+  profileView: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: 10,
+  },
+  coupleName: {
     fontSize: 22,
-    fontWeight: "bold",
-    marginBottom: 12,
-    textAlign: "center"
+    fontWeight: 500,
   },
-  subtitle: {
-    fontSize: 16,
-    color: "#888",
-    textAlign: "center"
+  settingsContainer: {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'flex-start',
+    width: '88%',
+    paddingVertical: 22,
   },
-  input: {
-    width: 260,
-    borderBottomWidth: 1,
-    borderColor: '#bbb',
-    fontSize: 18,
-    marginVertical: 10,
-    padding: 8
+  settingsTitle: {
+    fontSize: 19,
+    fontWeight: 700,
+    color: '#1e1e1e',
+    marginBottom: 20,
+  },
+  settingsButton: {
+    height: 50,
+    justifyContent: 'center',
+    width: '100%',
+  },
+  settingsText: {
+    fontSize: 15,
+    fontWeight: 400,
+    color: '#4b4b4b',
+  },
+  divider: {
+    width: '100%',
+    borderWidth: 1,
+    borderTopColor: '#eaeaea',
+    borderRightColor: '#eaeaea',
+    borderLeftColor: 'transparent',
+    borderBottomColor: 'transparent',
+  },
+  dividerThick: {
+    width: '100%',
+    height: 5,
+    backgroundColor: '#eaeaea',
   },
   button: {
-    width: 300,
-    height: 90,
-    resizeMode: 'contain'
+    height: 50,
+    backgroundColor: '#7493F7',
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '85%',
   },
-  copyButton: {
-    backgroundColor: '#f6e043',
-    paddingVertical: 8,
-    paddingHorizontal: 24,
-    borderRadius: 18,
-    marginTop: 8,
-  },
-  copyButtonText: { 
-    fontWeight: 'bold', 
-    fontSize: 16, 
-    color: '#333' 
-  },
-  profileImage: {
-    width: 100,
-    height: 100,
-    objectFit: 'cover',
-    borderRadius: 50
+  buttonText: {
+    fontSize: 16,
+    fontWeight: 500,
+    color: '#fff',
   },
 });
