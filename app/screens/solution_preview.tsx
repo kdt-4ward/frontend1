@@ -10,6 +10,7 @@ import { useAtomValue } from 'jotai';
 import { userAtom } from '@/atoms/userAtom';
 import { coupleAtom } from '@/atoms/coupleAtom';
 import Recommendations from '@/components/solutions/Recommendations';
+import WeeklyAdviceTabs from '@/components/solutions/WeeklyAdvice';
 
 
 // 임시 test 데이터 실제 배포 시 삭제
@@ -46,7 +47,8 @@ export default function SolutionPreviewScreen() {
       <StackedBarChart title={`${couple.user2.nickname}의 감정 비율`} data={makeStackedBarChartData(weeklyData, couple.user2.user_id)} />
       {/* <StackedBarChart title="전체 합산 감정 비율" data={makeStackedBarChartData(weeklyData, 'total')} /> */}
       <Recommendations />
-      <WeeklySummaryTabs weeklyData={weeklyData} />
+      <WeeklySummaryTabs />
+      {/* <WeeklyAdviceTabs /> */}
     </ScrollView>
   );
 }

@@ -5,10 +5,6 @@ import { useAtomValue } from 'jotai';
 import { userAtom } from '@/atoms/userAtom';
 import { apiFetch } from '@/utils/api';
 
-type WeeklySummaryTabsProps = {
-  weeklyData: any;
-};
-
 type SummaryType = {
   issue_analysis: {
     content: string
@@ -28,7 +24,7 @@ type Recommendation = {
   content: string;
 };
 
-export default function WeeklySummaryTabs() {
+export default function WeeklyAdviceTabs() {
   const user = useAtomValue(userAtom);
   const [positives, setPositives] = useState<string[]>([]);
   const [negatives, setNegatives] = useState<string[]>([]);
@@ -38,20 +34,20 @@ export default function WeeklySummaryTabs() {
   useEffect(() => {
     if (!user?.couple_id) return;
     setLoading(true);
-    apiFetch(`/analysis/weekly/couple/analysis/${user.couple_id}`)
+    apiFetch(`/analysis/weekly/couple/solution/${user.couple_id}`)
       .then(res => res.json())
       .then(data => {
-        const result = data.data.result;
-        console.log(result);
-        setPositives(result?.["positive_points"] || []);
-        setNegatives(result?.["negative_points"] || []);
-        let sum = result?.["summary"]
-        sum = sum.replace(/'/g, '"');
-        const sumObj = JSON.parse(sum);
-        console.log("서머리", sumObj);
-        setSummary(sumObj);
+        const advice = data;
+        console.log("어드바이스: ",advice);
+        // setPositives(advice?.["positive_points"] || []);
+        // setNegatives(advice?.["negative_points"] || []);
+        // let sum = advice?.["summary"]
+        // sum = sum.replace(/'/g, '"');
+        // const sumObj = JSON.parse(sum);
+        // console.log("서머리", sumObj);
+        // setSummary(sumObj);
       })
-      .catch(e => console.error('주간 리포트 데이터 불러오기 실패(analysis)', e))
+      .catch(e => console.error('주간 리포트 데이터 불러오기 실패(solution)', e))
       .finally(() => setLoading(false));
   }, [user?.couple_id]);
 
