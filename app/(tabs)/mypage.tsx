@@ -7,6 +7,7 @@ import { useAtomValue, useSetAtom } from 'jotai';
 import { userAtom } from '@/atoms/userAtom';
 import { coupleAtom } from '@/atoms/coupleAtom';
 import { apiFetch } from '@/utils/api';
+import { backendBaseUrl } from "@/constants/app.constants";
 
 export default function MyPage() {
   const router = useRouter();
@@ -48,6 +49,22 @@ export default function MyPage() {
     }
   };
 
+  const onExit = async () => {
+    try {
+      const res = await apiFetch(`/auth/delete-user`);
+      const msg = await res.text();
+      console.log("탈퇴메시지:", res);
+      if(!res.ok) return;
+      await removeAllTokens();
+      await setUser({});
+      await setCouple({});
+      alert("회원 탈퇴가 완료되었습니다.")
+    } catch (err) {
+      alert('회원 탈퇴 에러');
+      console.error(err);
+    }
+  };
+
   return (
     <View style={styles.container}>
       <View style={styles.profileBox}>
@@ -80,8 +97,12 @@ export default function MyPage() {
         <TouchableOpacity style={styles.settingsButton} onPress={onLogout}>
           <Text style={styles.settingsText}>로그아웃</Text>
         </TouchableOpacity>
+        <View style={styles.divider} />
+        <TouchableOpacity style={styles.settingsButton} onPress={onExit}>
+          <Text style={styles.settingsText}>탈퇴하기</Text>
+        </TouchableOpacity>
       </View>
-      <View style={styles.dividerThick} />
+      {/* <View style={styles.dividerThick} />
       <View style={styles.settingsContainer}>
         <Text style={styles.settingsTitle}>알림</Text>
         <TouchableOpacity style={styles.settingsButton}>
@@ -91,7 +112,7 @@ export default function MyPage() {
         <TouchableOpacity style={styles.settingsButton} onPress={onLogout}>
           <Text style={styles.settingsText}>로그아웃</Text>
         </TouchableOpacity>
-      </View>
+      </View> */}
     </View>
   );
 }
