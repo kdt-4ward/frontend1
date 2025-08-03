@@ -1,10 +1,7 @@
 
 import React, { useEffect, useState} from 'react';
-import { ScrollView, View, Text, StyleSheet } from 'react-native';
-import StackedBarChart from '@/components/solutions/stacked_bar_chart';
+import { ScrollView, Text, StyleSheet } from 'react-native';
 import BubbleChart from '@/components/solutions/bubleChart'; 
-import WeeklySummaryTabs from '@/components/solutions/WeeklySummaryTabs';
-import { makeStackedBarChartData } from '@/utils/Chart_test_data';
 import { apiFetch } from '@/utils/api'; 
 import { useAtomValue } from 'jotai';
 import { userAtom } from '@/atoms/userAtom';
@@ -25,7 +22,7 @@ export default function SolutionPreviewScreen() {
   useEffect(() => {
     if (!user?.couple_id) return;
     setLoading(true);
-    apiFetch(`/analysis/stats/${user.couple_id}?end_date=2025-08-03`)
+    apiFetch(`/analysis/stats/${user.couple_id}?end_date=2025-07-20`)
       .then(res => res.json())
       .then(data => {
         // console.log('응답 데이터:', data);
@@ -42,13 +39,8 @@ export default function SolutionPreviewScreen() {
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <BubbleChart weeklyData={weeklyData} />
-      <Text style={[styles.heading, { marginTop: 40 }]}>감정 표현 분석</Text>
-      <StackedBarChart title={`${couple.user1.nickname}의 감정 비율`} data={makeStackedBarChartData(weeklyData, couple.user1.user_id)} />
-      <StackedBarChart title={`${couple.user2.nickname}의 감정 비율`} data={makeStackedBarChartData(weeklyData, couple.user2.user_id)} />
-      {/* <StackedBarChart title="전체 합산 감정 비율" data={makeStackedBarChartData(weeklyData, 'total')} /> */}
+      <WeeklyAdviceTabs />
       <Recommendations />
-      <WeeklySummaryTabs />
-      {/* <WeeklyAdviceTabs /> */}
     </ScrollView>
   );
 }
@@ -56,7 +48,9 @@ export default function SolutionPreviewScreen() {
 const styles = StyleSheet.create({
   container: {
     padding: 20,
-    backgroundColor: '#fff',
+    backgroundColor: '#F6F8FF',
+    gap: 20,
+    paddingBottom: 50,
   },
   heading: {
     fontSize: 20,

@@ -129,11 +129,11 @@ export default function TabLayout() {
             tabBarIcon: ({ focused }) => (
               <TabBarIcon
                 name="home"
-                color={focused ? '#fff' : 'rgba(168, 168, 168, 0.8)'} // home만 이런 색!
+                color={focused ? '#fff' : 'rgba(173, 173, 173, 0.8)'} // home만 이런 색!
               />
             ),
             tabBarLabel: ({ focused }) => (
-              <Text style={{ color: focused ? '#fff' : 'rgba(168, 168, 168, 0.8)', fontSize: 13 }}>
+              <Text style={{ color: focused ? '#fff' : 'rgba(173, 173, 173, 0.8)', fontSize: 13 }}>
                 홈
               </Text>
             ),
@@ -153,7 +153,7 @@ export default function TabLayout() {
               <View>
                 <TabBarIcon
                   name="wechat"
-                  color={focused ? '#7493F7' : 'rgba(168, 168, 168, 0.8)'}
+                  color={focused ? '#7493F7' : 'rgba(173, 173, 173, 0.8)'}
                 />
                 {unreadCount > 0 && (
                   <Badge value={unreadCount > 99 ? '99+' : unreadCount} status="error" containerStyle={{ position: 'absolute', right: -8, top: -6 }} />
@@ -161,7 +161,7 @@ export default function TabLayout() {
               </View>
             ),
             tabBarLabel: ({ focused }) => (
-              <Text style={{ color: focused ? '#7493F7' : 'rgba(168, 168, 168, 0.8)', fontSize: 13 }}>
+              <Text style={{ color: focused ? '#7493F7' : 'rgba(173, 173, 173, 0.8)', fontSize: 13 }}>
                 연인톡
               </Text>
             ),
@@ -180,11 +180,11 @@ export default function TabLayout() {
             tabBarIcon: ({ focused }) => (
               <TabBarIcon
                 name="user"
-                color={focused ? '#7493F7' : 'rgba(168, 168, 168, 0.8)'}
+                color={focused ? '#7493F7' : 'rgba(173, 173, 173, 0.8)'}
               />
             ),
             tabBarLabel: ({ focused }) => (
-              <Text style={{ color: focused ? '#7493F7' : 'rgba(168, 168, 168, 0.8)', fontSize: 13 }}>
+              <Text style={{ color: focused ? '#7493F7' : 'rgba(173, 173, 173, 0.8)', fontSize: 13 }}>
                 마이페이지
               </Text>
             ),

@@ -10,11 +10,9 @@ const windowHeight = Dimensions.get("window").height;
 interface Props {
   onSubmit: (selected: string[]) => void;
   initialSelected?: string[];
-  onCancel?: () => void;
-  onBack?: () => void;
 }
 
-export default function EmotionStep2({ onSubmit, initialSelected, onCancel,onBack }: Props) {
+export default function EmotionStep2({ onSubmit, initialSelected }: Props) {
   const [selectedLabels, setSelectedLabels] = useState<string[]>(initialSelected ?? []);
   const [warn, setWarn] = useState(false);
 
@@ -36,11 +34,6 @@ export default function EmotionStep2({ onSubmit, initialSelected, onCancel,onBac
   return (
     <View style={styles.container}>
       {/* 뒤로가기(←) 버튼: onBack이 있을 때만 보임 */}
-      {onBack && (
-        <TouchableOpacity onPress={onBack} style={styles.backBnt}>
-          <Ionicons name="arrow-back" size={24} color="#666" />
-        </TouchableOpacity>
-      )}
 
       {/* X(닫기) 버튼: 필요하다면 아래처럼! */}
       {/* {onCancel && (
@@ -62,8 +55,7 @@ export default function EmotionStep2({ onSubmit, initialSelected, onCancel,onBac
               style={[
                 styles.tagBtn,
                 {
-                  backgroundColor: selectedLabels.includes(item.label) ? item.color : "#eee",
-                  borderWidth: selectedLabels.includes(item.label) ? 2 : 1,
+                  backgroundColor: selectedLabels.includes(item.label) ? item.color : "rgba(0, 0, 0, 0.15)",
                   borderColor: selectedLabels.includes(item.label) ? "#333" : "#ccc",
                 },
               ]}
@@ -71,8 +63,9 @@ export default function EmotionStep2({ onSubmit, initialSelected, onCancel,onBac
               activeOpacity={0.8}
             >
               <Text style={{
-                color: selectedLabels.includes(item.label) ? "#fff" : "#333",
-                fontWeight: selectedLabels.includes(item.label) ? "bold" : "normal"
+                fontSize: 15,
+                color: "#fff",
+                fontWeight: selectedLabels.includes(item.label) ? "bold" : "normal",
               }}>
                 {item.label}
               </Text>
@@ -81,15 +74,17 @@ export default function EmotionStep2({ onSubmit, initialSelected, onCancel,onBac
         />
       </View>
       {/* 하단 "선택 완료" 버튼 */}
-      <View style={styles.arrowWrap}>
-        <TouchableOpacity
-          style={styles.arrowBtn}
-          disabled={selectedLabels.length === 0}
-          onPress={() => onSubmit(selectedLabels)}
-        >
-          <Ionicons name="arrow-forward" size={30} color={selectedLabels.length > 0 ? "#222" : "#d0d0d0"} />
-        </TouchableOpacity>
-      </View>
+      {selectedLabels.length > 0 && (
+        <View style={styles.arrowWrap}>
+          <TouchableOpacity
+            style={styles.arrowBtn}
+            disabled={selectedLabels.length === 0}
+            onPress={() => onSubmit(selectedLabels)}
+          >
+            <Ionicons name="arrow-forward" size={30} color={"#fff"} />
+          </TouchableOpacity>
+        </View>
+      )}
 
       {/* 경고 메시지 */}
       {warn && (
@@ -123,7 +118,6 @@ const styles = StyleSheet.create({
   },
   container: {
     flex: 1,
-    backgroundColor: "#fff",
   },
   closeBtn: {
     position: "absolute",
@@ -134,29 +128,37 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 18,
-    fontWeight: "bold",
+    fontWeight: 600,
     textAlign: "center",
-    marginTop: 80,
-    marginBottom: 28,
-    color: "#333"
+    marginBottom: 30,
+    color: "#fff",
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
   },
   gridWrap: {
     flex: 1,
-    justifyContent: "flex-end",
-    marginBottom: 110,
+    width: '100%',
+    height: '100%',
   },
   grid: {
     alignItems: "center",
     justifyContent: "flex-end",
     minHeight: windowHeight * 0.36,
+    paddingBottom: 100,
   },
   tagBtn: {
     minWidth: 74,
-    minHeight: 44,
+    minHeight: 36,
     alignItems: "center",
     justifyContent: "center",
-    paddingHorizontal: 16,
-    margin: 8,
+    paddingVertical: 12,
+    paddingHorizontal: 17,
+    margin: 4,
     borderRadius: 20,
     backgroundColor: "#eee",
   },
@@ -164,19 +166,23 @@ const styles = StyleSheet.create({
     width: "100%",
     alignItems: "center",
     justifyContent: "center",
-    marginBottom: 36,
+    marginBottom: 10,
     position: "absolute",
     bottom: 0,
     left: 0,
     right: 0,
   },
   arrowBtn: {
-    backgroundColor: "#fff",
+    backgroundColor: "rgba(255,255,255,0.25)",
     borderRadius: 30,
-    elevation: 4,
-    shadowColor: "#222",
-    shadowOpacity: 0.08,
-    shadowRadius: 4,
+    shadowColor: '#fff',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.3,
+    shadowRadius: 3.84,
+    elevation: 5,
     padding: 8,
   }
 });

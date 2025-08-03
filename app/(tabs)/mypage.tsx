@@ -8,6 +8,7 @@ import { userAtom } from '@/atoms/userAtom';
 import { coupleAtom } from '@/atoms/coupleAtom';
 import { apiFetch } from '@/utils/api';
 import { backendBaseUrl } from "@/constants/app.constants";
+import KakaoChatUploadModal from "../modal/KakaoChatUploadModal";
 
 export default function MyPage() {
   const router = useRouter();
@@ -15,6 +16,7 @@ export default function MyPage() {
   const coupleInfo = useAtomValue(coupleAtom);
   const setUser = useSetAtom(userAtom);
   const setCouple = useSetAtom(coupleAtom);
+  const [showKakaoModal, setShowKakaoModal] = useState(false);
 
   useEffect(() => {
     if (!user) {
@@ -93,6 +95,15 @@ export default function MyPage() {
         <TouchableOpacity style={styles.settingsButton}>
           <Text style={styles.settingsText}>닉네임 변경하기</Text>
         </TouchableOpacity>
+        {user.email === null && (
+          <>
+            <View style={styles.divider} />
+            <TouchableOpacity style={styles.settingsButton} onPress={() => setShowKakaoModal(true)}>
+              <Text style={styles.settingsText}>카카오톡 대화내용 가져오기</Text>
+            </TouchableOpacity>
+            <KakaoChatUploadModal visible={showKakaoModal} onClose={() => setShowKakaoModal(false)} />
+          </>
+        )}
         <View style={styles.divider} />
         <TouchableOpacity style={styles.settingsButton} onPress={onLogout}>
           <Text style={styles.settingsText}>로그아웃</Text>

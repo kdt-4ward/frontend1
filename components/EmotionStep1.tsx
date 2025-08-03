@@ -1,20 +1,18 @@
 
 import React, { useState } from "react";
-import { View, Text, TouchableOpacity, FlatList, StyleSheet, Dimensions } from "react-native";
+import { View, Text, TouchableOpacity, FlatList, StyleSheet, Dimensions, Image } from "react-native";
 import { Ionicons } from '@expo/vector-icons';
 import { emotionCharacters, EmotionCharacter } from "../constants/emotionCharacters";
 
-const numColumns = 3;
-const windowHeight = Dimensions.get("window").height;
+const numColumns = 4;
+// const windowHeight = Dimensions.get("window").height;
 
 export default function EmotionStep1({
   onSelect,
   initialSelected,
-  onCancel,
 }: {
   onSelect: (character: EmotionCharacter) => void;
   initialSelected?: string;
-  onCancel?: () => void;
 }) {
   const [selectedId, setSelectedId] = useState<string | null>(initialSelected ?? null);
 
@@ -22,7 +20,7 @@ export default function EmotionStep1({
     <View style={styles.container}>
 
       {/* 제목 */}
-      <Text style={styles.title}>오늘의 감정을 골라보세요</Text>
+      <Text style={styles.title}>오늘 연인에게 어떤 감정을 느꼈어?</Text>
       {/* 캐릭터 그리드(하단에 배치) */}
       <View style={styles.gridWrap}>
         <FlatList
@@ -35,9 +33,7 @@ export default function EmotionStep1({
               style={[
                 styles.circle,
                 {
-                  backgroundColor: item.color,
-                  borderWidth: selectedId === item.id ? 3 : 0,
-                  borderColor: selectedId === item.id ? "#222" : undefined,
+                  shadowOpacity: selectedId === item.id ? 0.7 : 0,
                 },
               ]}
               onPress={() => {
@@ -46,34 +42,36 @@ export default function EmotionStep1({
               }}
               activeOpacity={0.85}
             >
-              <Text style={styles.emoji}>{item.label}</Text>
+              <Image source={item.imagePath} style={styles.emoji} resizeMode="contain"/>
             </TouchableOpacity>
           )}
         />
       </View>
       {/* 하단 → 버튼 */}
-      <View style={styles.arrowWrap}>
-        <TouchableOpacity
-          style={styles.arrowBtn}
-          disabled={!selectedId}
-          onPress={() => {
-            if (selectedId) {
-              const char = emotionCharacters.find((c) => c.id === selectedId);
-              if (char) onSelect(char);
-            }
-          }}
-        >
-          <Ionicons name="arrow-forward" size={30} color={selectedId ? "#222" : "#d0d0d0"} />
-        </TouchableOpacity>
-      </View>
+      {selectedId && (
+        <View style={styles.arrowWrap}>
+          <TouchableOpacity
+            style={styles.arrowBtn}
+            disabled={!selectedId}
+            onPress={() => {
+              if (selectedId) {
+                const char = emotionCharacters.find((c) => c.id === selectedId);
+                if (char) onSelect(char);
+              }
+            }}
+          >
+            <Ionicons name="arrow-forward" size={30} color={"#fff"} />
+          </TouchableOpacity>
+        </View>
+      )}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
-    backgroundColor: "#fff",
+    width: '100%',
+    height: '100%',
   },
   closeBtn: {
     position: "absolute",
@@ -83,54 +81,67 @@ const styles = StyleSheet.create({
     padding: 4,
   },
   title: {
-    fontSize: 19,
-    fontWeight: "bold",
+    fontSize: 18,
+    fontWeight: 600,
     textAlign: "center",
-    marginTop: 80,
-    marginBottom: 28,
-    color: "#333"
+    marginBottom: 30,
+    color: "#fff",
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
   },
   gridWrap: {
     flex: 1,
-    justifyContent: "flex-end",
-    marginBottom: 110,
+    width: '100%',
+    height: '100%',
   },
   grid: {
     alignItems: "center",
-    justifyContent: "flex-end",
-    minHeight: windowHeight * 0.42,
   },
   circle: {
-    width: 76,
-    height: 76,
-    borderRadius: 38,
+    width: 64,
+    height: 64,
     alignItems: "center",
     justifyContent: "center",
     margin: 9,
-    backgroundColor: "#eee",
+    shadowColor: '#fff',
+    shadowOffset: {
+      width: 0,
+      height: 0,
+    },
+    shadowOpacity: 0,
+    shadowRadius: 6,
+    elevation: 5,
   },
   emoji: {
-    fontSize: 18,
-    color: "#fff",
-    fontWeight: "bold"
+    width: 64,
+    height: 64,
   },
   arrowWrap: {
     width: "100%",
     alignItems: "center",
     justifyContent: "center",
-    marginBottom: 36,
+    marginBottom: 10,
     position: "absolute",
     bottom: 0,
     left: 0,
     right: 0,
   },
   arrowBtn: {
-    backgroundColor: "#fff",
+    backgroundColor: "rgba(255,255,255,0.25)",
     borderRadius: 30,
-    elevation: 4,
-    shadowColor: "#222",
-    shadowOpacity: 0.08,
-    shadowRadius: 4,
+    shadowColor: '#fff',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.3,
+    shadowRadius: 3.84,
+    elevation: 5,
     padding: 8,
-  }
+  },
 });
