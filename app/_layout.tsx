@@ -1,5 +1,5 @@
 import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
-import { Stack } from 'expo-router';
+import { router, Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 
@@ -13,7 +13,8 @@ import { useAtomValue, useSetAtom } from 'jotai';
 import { userAtom } from '@/atoms/userAtom';
 import { apiFetch } from '@/utils/api';
 import * as Notifications from 'expo-notifications';
-import { Text } from 'react-native';
+import { Text, TouchableOpacity } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 
 export { ErrorBoundary } from 'expo-router';
 
@@ -63,19 +64,34 @@ export default function RootLayout() {
   }
 
   return (
-    <GestureHandlerRootView style={{ flex: 1 }}>
+    <GestureHandlerRootView style={{ flex: 1, backgroundColor: '#fff' }}>
       <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
         <Stack initialRouteName={initialRoute}>
           <Stack.Screen name="onboarding" options={{ headerShown: false }} />
           <Stack.Screen name="modal/SurveyModal" options={{ headerShown: false }} />
           <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
           <Stack.Screen name="+not-found" />
+          {/* <Stack.Screen
+            name="modal/EmotionRecordFlow"
+            options={{
+              title: '',
+              headerTitleStyle: {},
+              headerShadowVisible: false,
+              presentation: 'transparentModal',
+              gestureDirection: 'vertical',
+            }}
+          /> */}
           <Stack.Screen
             name="screens/aiChat"
             options={{
               title: '',
-              headerTitle: () => <Text style={{fontWeight:'bold', fontSize:18}}>러비와 대화하기</Text>,
+              headerTitle: () => <Text style={{fontWeight:600, fontSize:18, color: 'rgba(0,0,0,0.8)'}}>러비와 대화하기</Text>,
               headerBackTitle: '홈',
+              headerLeft: () => (
+                <TouchableOpacity onPress={() => router.dismiss()}>
+                  <Ionicons name="chevron-back" size={26} color="rgba(0,0,0,0.5)" />
+                </TouchableOpacity>
+              ),
               headerStyle: {
                 backgroundColor: 'rgba(199, 199, 199, 0.7)',
               },
@@ -89,31 +105,78 @@ export default function RootLayout() {
             name="screens/tabpost" 
             options={{
               title: '',
-              headerTitle: () => <Text style={{fontWeight:'bold', fontSize:18}}>게시글 작성</Text>,
+              headerTitle: () => <Text style={{fontWeight:600, fontSize:18}}>우리의 앨범</Text>,
               headerBackTitle: '홈',
+              headerShadowVisible: false,
+              headerLeft: () => (
+                <TouchableOpacity onPress={() => router.dismiss()}>
+                  <Ionicons name="chevron-back" size={26} color="rgba(0,0,0,0.5)" />
+                </TouchableOpacity>
+              ),
+            }}
+          />
+          <Stack.Screen
+            name="post/edit" 
+            options={{
+              title: '',
+              headerTitle: () => <Text style={{fontWeight:600, fontSize:18}}>사진 편집</Text>,
+              headerBackTitle: '홈',
+              headerShadowVisible: false,
+              headerLeft: () => (
+                <TouchableOpacity onPress={() => router.dismiss()}>
+                  <Ionicons name="chevron-back" size={26} color="rgba(0,0,0,0.5)" />
+                </TouchableOpacity>
+              ),
             }}
           />
           <Stack.Screen
             name="screens/feelings"
             options={{
               title: '',
-              headerTitle: () => <Text style={{fontWeight:'bold', fontSize:18}}>감정 기록</Text>,
-              headerBackTitle: '홈',
+              headerTitle: () => <Text style={{fontWeight:600, fontSize:18}}>감정 기록</Text>,
+              headerShadowVisible: false,
+              headerLeft: () => (
+                <TouchableOpacity onPress={() => router.dismiss()}>
+                  <Ionicons name="chevron-back" size={26} color="rgba(0,0,0,0.5)" />
+                </TouchableOpacity>
+              ),
             }}
           />
           <Stack.Screen
-            name="screens/solution_preview"
+            name="screens/solution_1"
             options={{
               title: '',
-              headerTitle: () => <Text style={{fontWeight:'bold', fontSize:18}}>솔루션</Text>,
-              headerBackTitle: '홈',
+              headerTitle: () => <Text style={{fontWeight:600, fontSize:18}}>주간 리포트</Text>,
+              headerShadowVisible: false,
+              headerLeft: () => (
+                <TouchableOpacity onPress={() => router.dismiss()}>
+                  <Ionicons name="chevron-back" size={26} color="rgba(0,0,0,0.5)" />
+                </TouchableOpacity>
+              ),
+            }}
+          />
+          <Stack.Screen
+            name="screens/solution_2"
+            options={{
+              title: '',
+              headerTitle: () => <Text style={{fontWeight:600, fontSize:18}}>솔루션</Text>,
+              headerLeft: () => (
+                <TouchableOpacity onPress={() => router.dismiss()}>
+                  <Ionicons name="chevron-back" size={26} color="rgba(0,0,0,0.5)" />
+                </TouchableOpacity>
+              ),
             }}
           />
           <Stack.Screen
             name="webview/youtubeWebView"
             options={{
               title: '',
-              headerTitle: () => <Text style={{fontWeight:'bold', fontSize:18}}>솔루션</Text>,
+              headerTitle: () => <Text style={{fontWeight:600, fontSize:18}}>솔루션</Text>,
+              headerLeft: () => (
+                <TouchableOpacity onPress={() => router.dismiss()}>
+                  <Ionicons name="chevron-back" size={26} color="rgba(0,0,0,0.5)" />
+                </TouchableOpacity>
+              ),
             }}
           />
         </Stack>

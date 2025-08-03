@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, StyleSheet, Modal, TouchableOpacity } from "react-native";
+import { View, Text, StyleSheet, Modal, TouchableOpacity, Image } from "react-native";
 import { emotionCharacters } from "../../constants/emotionCharacters";
-import EmotionRecordFlow from "../../components/EmotionRecordFlow";
+import EmotionRecordModal from '../modal/EmotionRecordModal';
 import { Calendar, DateData, LocaleConfig } from "react-native-calendars";
 import { Ionicons } from "@expo/vector-icons";
 import { useAtom } from "jotai";
 import { recordsAtom, todayRecordAtom, selectedDateAtom, loadingAtom } from "../../atoms/emotionAtoms";
+import { router } from "expo-router";
 
 LocaleConfig.locales['ko'] = {
   monthNames: [
@@ -79,12 +80,12 @@ export default function FeelingsScreen() {
       {
         customStyles: {
           container: {
-            backgroundColor: getCharacterInfo(record.basic)?.color || "#eee",
-            borderRadius: 16,
+            backgroundColor: "#E6ECFF",
+            borderRadius: 10,
           },
           text: {
-            color: "#fff",
-            fontWeight: "bold" as const,
+            color: "#7493F7",
+            fontWeight: "800",
           },
         },
       },
@@ -100,11 +101,11 @@ export default function FeelingsScreen() {
         customStyles: {
           container: {
             backgroundColor: "transparent",
-            borderRadius: 16
+            borderRadius: 10
           },
           text: {
             color: "#bbb",
-            fontWeight: "bold"
+            fontWeight: "500",
           }
         }
       };
@@ -121,42 +122,101 @@ export default function FeelingsScreen() {
     !records[detailDate];         // 기록 없음
 
   return (
-    <View style={{ flex: 1, paddingTop: 32 }}>
-      <Calendar
-        monthFormat={'yyyy년 M월'}
-        style={{ 
-          marginHorizontal: 12,
-          borderRadius: 22,
-          backgroundColor: "#fff",
-          elevation: 5,
-          shadowColor: "#4077F3",
-          shadowOpacity: 0.08,
-          shadowRadius: 12,
-          shadowOffset: { width: 0, height: 3 } 
-        }}
-        markingType="custom"
-        markedDates={markedDates}
-        onDayPress={onDayPress}
-        theme={{
-          backgroundColor: "#fff",
-          calendarBackground: "#fff",
-          textSectionTitleColor: "#222",  // 요일 색
-          textSectionTitleDisabledColor: "#bbb",
-          selectedDayBackgroundColor: "#4077F3",
-          selectedDayTextColor: "#fff",
-          todayTextColor: "#ff6347",
-          dayTextColor: "#222",
-          textDisabledColor: "#bbb",
-          arrowColor: "#4077F3",
-          monthTextColor: "#2b3f6c",
-          textMonthFontWeight: "bold",
-          textMonthFontSize: 20,
-          textDayFontWeight: "600",
-          textDayHeaderFontWeight: "bold",
-          textDayFontSize: 16,
-          textDayHeaderFontSize: 15,
-            }}
-      />
+    <View style={styles.container}>
+      <View style={styles.calendarBox}>
+        <Calendar
+          monthFormat={'yyyy년 M월'}
+          style={styles.calendar}
+          markingType="custom"
+          markedDates={markedDates}
+          onDayPress={onDayPress}
+          theme={{
+            backgroundColor: "#fff",
+            calendarBackground: "#fff",
+            textSectionTitleColor: "#2650db",  // 요일 색
+            textSectionTitleDisabledColor: "#bbb",
+            selectedDayBackgroundColor: "#7493F7",
+            selectedDayTextColor: "#fff",
+            todayTextColor: "#F978B6",
+            dayTextColor: "#5c5c5c",
+            textDisabledColor: "#bbb",
+            arrowColor: "#7493F7",
+            monthTextColor: "#0d37c3",
+            textMonthFontWeight: 700,
+            textMonthFontSize: 20,
+            textDayFontWeight: 500,
+            textDayHeaderFontWeight: 600,
+            textDayFontSize: 15,
+            textDayHeaderFontSize: 15,
+          }}
+          dayComponent={({ date, state }) => {
+            const dateStr = date.dateString;
+            const record = records[dateStr];
+            const charInfo = record ? getCharacterInfo(record.basic) : null;
+            const isSelected = dateStr === selectedDate && record;
+            const customStyle = markedDates[dateStr]?.customStyles;
+            const isToday = dateStr === today;
+
+            return (
+              <TouchableOpacity
+                activeOpacity={0.7}
+                onPress={() => {
+                  const [year, month, day] = dateStr.split('-').map(Number);
+                  onDayPress({
+                    dateString: dateStr,
+                    year,
+                    month,
+                    day,
+                    timestamp: new Date(dateStr).getTime(),
+                  });
+                }}
+                style={[
+                  {
+                    alignItems: "center",
+                    justifyContent: "flex-start",
+                    minHeight: isToday ? 0 : 60,
+                    marginVertical: -6,
+                    padding: 10,
+                    backgroundColor: isSelected
+                      ? "#E6ECFF"
+                      : (customStyle?.container?.backgroundColor ?? "transparent"),
+                    borderRadius: 10,
+                  }
+                ]}
+              >
+                <Text
+                  style={{
+                    color: isSelected
+                      ? "#7493F7"
+                      : (customStyle?.text?.color
+                          ?? (state === "disabled"
+                            ? "#bbb"
+                            : "#5c5c5c")),
+                    fontWeight: isSelected
+                      ? 800
+                      : (customStyle?.text?.fontWeight ?? 500),
+                    fontSize: 15,
+                    marginBottom: charInfo ? 2 : 0,
+                  }}
+                >
+                  {date.day}
+                </Text>
+                <Image
+                  source={charInfo && charInfo.imagePath}
+                  style={{
+                    width: 22,
+                    height: 22,
+                    marginTop: 1,
+                    borderRadius: 8,
+                    opacity: charInfo ? (state === "disabled" ? 0.35 : 1) : 0,
+                  }}
+                  resizeMode="contain"
+                />
+              </TouchableOpacity>
+            );
+          }}
+        />
+      </View>
 
       {/* 상세 기록 패널 */}
       <View style={styles.detailCard}>
@@ -168,39 +228,28 @@ export default function FeelingsScreen() {
               style={{position: "absolute", top: 14, right: 14, zIndex: 2}}
               hitSlop={10}
             >
-              <Ionicons name="pencil" size={22} color="#4077F3" />
+              <Ionicons name="pencil" size={22} color="#7493F7" />
             </TouchableOpacity>
-            <Text style={{ fontSize: 18, fontWeight: "bold", marginBottom: 6, paddingRight: 38 }}>
+            <Text style={{ fontSize: 18, fontWeight: 700, marginBottom: 6, paddingRight: 38, color: '#7493F7' }}>
               {formatMonthDay(detail.date)}
             </Text>
-            <View style={{
-              flexDirection: "row",
-              alignItems: "center",
-              marginBottom: 10,
-            }}>
-              <View
-                style={{
-                  width: 32,
-                  height: 32,
-                  borderRadius: 16,
-                  backgroundColor: charInfo?.color || "#ddd",
-                  justifyContent: "center",
-                  alignItems: "center",
-                  marginRight: 10,
-                }}
-              >
-                <Text style={{ color: "#fff", fontWeight: "bold" }}>
-                  {charInfo?.label || detail.basic}
-                </Text>
+            <View style={{flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+              <View style={{
+                flexDirection: "row",
+                alignItems: "center",
+                marginBottom: 10,
+              }}>
+                <Image source={charInfo?.imagePath} style={styles.emoji} resizeMode="contain" />
               </View>
-              <Text style={{ fontSize: 16 }}>{charInfo?.label || detail.basic}</Text>
+              {detail.details.map((i) => (
+                <View key={i} style={styles.tag}>
+                  <Text style={styles.tagText}>{i}</Text>
+                </View>
+              ))}
             </View>
-            <Text style={{ fontSize: 15, marginBottom: 5 }}>
-              {detail.details.join(", ")}
-            </Text>
             {detail.memo && (
-              <Text style={{ fontSize: 15, color: "#406", marginBottom: 7 }}>
-                Memo: {detail.memo}
+              <Text style={{ fontSize: 15, color: "#333", marginBottom: 7 }}>
+                {detail.memo}
               </Text>
             )}
           </>
@@ -215,27 +264,25 @@ export default function FeelingsScreen() {
       </View>
 
       {/* 감정 기록 플로우(모달, 입력·수정 모두 지원) */}
-      <Modal
+      <EmotionRecordModal
         visible={showRecordFlow || editMode}
-        animationType="slide"
-        transparent={false}
-      >
-        <View style={styles.modalWrap}>
-          <EmotionRecordFlow
-            // editMode면 editDate로, 아니면 undefined(오늘)
-            editDate={editMode ? (detailDate ?? undefined) : undefined}
-            onComplete={() => {
-              setShowRecordFlow(false);
-              setEditMode(false);
-            }}
-          />
-        </View>
-      </Modal>
+        onClose={() => {
+          setShowRecordFlow(false);
+          setEditMode(false);
+        }}
+        editDate={editMode ? (detailDate ?? undefined) : undefined}
+      />
     </View>
   );
 }
-
+// getCharacterInfo(record.basic)?.
 const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    paddingTop: 32,
+    backgroundColor: '#F6F8FF',
+    width: '100%',
+  },
   detailCard: {
     marginTop: 20,
     backgroundColor: "#fff",
@@ -254,5 +301,30 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff", // 완전히 불투명!
     justifyContent: "center",
     alignItems: "center",
+    width: '100%',
   },
+  calendarBox: {
+    
+  },
+  calendar: {
+    marginHorizontal: 15,
+    borderRadius: 15,
+    borderWidth: 10,
+    borderColor: '#E6ECFF',
+    backgroundColor: "#fff",
+    // elevation: 5,
+    // shadowColor: "#7493F7",
+    // shadowOpacity: 0.08,
+    // shadowRadius: 12,
+    // shadowOffset: { width: 0, height: 3 } 
+  },
+  emoji: {
+    width: 45, 
+    height: 45,
+  },
+  tag: {
+    backgroundColor: "#E6ECFF", paddingHorizontal: 10, paddingVertical: 8,
+    borderRadius: 16,
+  },
+  tagText: { color: "#7493F7", fontSize: 14, fontWeight: 600 },
 });

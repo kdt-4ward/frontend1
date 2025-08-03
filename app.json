@@ -31,7 +31,8 @@
         "backgroundColor": "#ffffff"
       },
       "edgeToEdgeEnabled": true,
-      "package": "com.heasolk.frontend1"
+      "package": "com.heasolk.frontend1",
+      "theme": "EdgeToEdge"
     },
     "web": {
       "bundler": "metro",

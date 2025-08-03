@@ -9,11 +9,13 @@ import { apiFetch } from '@/utils/api';
 import * as Clipboard from 'expo-clipboard';
 import { backendBaseUrl } from '@/constants/app.constants';
 import { coupleAtom } from '@/atoms/coupleAtom';
+import { TermsAgreement } from '@/components/TermsAgreement';
+import TermsModal from './modal/TermsModal';
 
 type Step = "select" | "login" | "signup" | "couple";
 
 export default function OnboardingScreen() {
-  const [step, setStep] = useState<Step>("select");
+  const [step, setStep] = useState("select");
   const [inviteCode, setInviteCode] = useState('');
   const [myInviteCode, setMyInviteCode] = useState('');
   const [email, setEmail] = useState('');
@@ -28,6 +30,9 @@ export default function OnboardingScreen() {
   const router = useRouter();
   const kakaoLoginButton = require('../assets/images/kakao_login_large_wide.png');
   const userInfo = useAtomValue(userAtom);
+  const [agreed, setAgreed] = useState(false);
+  const [showPrivacy, setShowPrivacy] = useState(false);
+  const [showTerms, setShowTerms] = useState(false);
 
   useEffect(() => {
     setUser(null);
@@ -200,16 +205,19 @@ export default function OnboardingScreen() {
       <View style={styles.container}>
         <Image
           style={{ width: 200, height: 200 }}
-          source={require('@/assets/images/icon.png')}
+          source={require('@/assets/images/logo-nobg.png')}
           resizeMode="contain"
         />
-        <Text style={styles.welcome}>LuvTune에 오신 걸 환영해요!</Text>
+        <Text style={styles.welcome}>사랑하는 만큼,{'\n'}서로를 더 알아가는 시간{'\n'}럽튠과 시작해요</Text>
+        <TermsAgreement onShowPrivacy={() => setShowPrivacy(true)} onShowTerms={() => setShowTerms(true)} />
         <TouchableOpacity onPress={onKakaoLogin} style={styles.kakaoButton} activeOpacity={0.7}>
           <Image source={kakaoLoginButton} style={styles.kakaoImg} />
         </TouchableOpacity>
         <TouchableOpacity style={[styles.button, { marginTop: 0, marginBottom: 0 }]} onPress={() => setStep("login")}>
-          <Text style={styles.buttonText}>이메일로 로그인</Text>
+          <Text style={styles.buttonText}>이메일로 시작하기</Text>
         </TouchableOpacity>
+        <TermsModal visible={showPrivacy} onClose={() => setShowPrivacy(false)} type="privacy" />
+        <TermsModal visible={showTerms} onClose={() => setShowTerms(false)} type="terms" />
       </View>
     );
   }
@@ -304,7 +312,7 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: "#fff"
+    backgroundColor: "#ECECFA",
   },
   welcome: {
     fontSize: 22,
@@ -312,6 +320,7 @@ const styles = StyleSheet.create({
     textAlign: "center",
     marginTop: 20,
     marginBottom: 40,
+    lineHeight: 36
   },
   subtitle: {
     fontSize: 16,

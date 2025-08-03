@@ -66,7 +66,6 @@ export default function Recommendations() {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.sectionTitle}>추천 음악</Text>
       <TouchableOpacity
         onPress={() =>
           router.push({
@@ -76,15 +75,15 @@ export default function Recommendations() {
         }
       >
         <View style={styles.card}>
+          <Text style={styles.sectionTitle}>추천 음악</Text>
+          <Text style={[styles.cardText, {fontSize: 16, fontWeight: 600}]}>🎵 {song?.title} 🎵</Text>
           <Image
             source={{ uri: song?.youtube_info.thumbnail_url }}
-            style={{ width: '100%', height: 150, borderRadius: 8, alignSelf: 'center' }}
+            style={styles.cardImage}
           />
-          <Text style={[styles.cardText, {fontSize: 16, fontWeight: 600}]}>{song?.title}</Text>
           <Text style={styles.cardText}>{song?.reason}</Text>
         </View>
       </TouchableOpacity>
-      <Text style={styles.sectionTitle}>추천 영화</Text>
       <TouchableOpacity
         onPress={() =>
           router.push({
@@ -94,11 +93,12 @@ export default function Recommendations() {
         }
       >
         <View style={styles.card}>
+          <Text style={styles.sectionTitle}>추천 영화</Text>
+          <Text style={[styles.cardText, {fontSize: 16, fontWeight: 600}]}>🎥 {movie?.title} 🎥</Text>
           <Image
             source={{ uri: movie?.tmdb_info.poster_url }}
             style={{ width: '100%', height: 450, borderRadius: 8, alignSelf: 'center' }}
           />
-          <Text style={[styles.cardText, {fontSize: 16, fontWeight: 600}]}>{movie?.title}</Text>
           <Text style={styles.cardText}>{movie?.reason}</Text>
         </View>
       </TouchableOpacity>
@@ -108,28 +108,34 @@ export default function Recommendations() {
 
 const styles = StyleSheet.create({
   container: {
-    marginTop: 40,
-    paddingHorizontal: 16,
+    width: "100%",
+    gap: 20,
   },
   sectionTitle: {
     fontSize: 18,
     fontWeight: 'bold',
-    marginTop: 24,
-    marginBottom: 12,
+    marginRight: 'auto',
   },
   card: {
-    backgroundColor: '#e9e9e9',
-    padding: 16,
-    borderRadius: 12,
+    padding: 20,
+    backgroundColor: '#fff',
+    borderWidth: 1,
+    borderColor: '#dde4fe',
+    borderRadius: 10,
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 15,
+    gap: 20,
   },
   cardText: {
     fontSize: 14,
-    lineHeight: 20,
-    marginBottom: 10,
+    lineHeight: 24,
+  },
+  cardImage: {
+    width: '100%',
+    height: 150,
+    borderRadius: 8,
+    alignSelf: 'center'
   },
 });

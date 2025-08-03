@@ -1,22 +1,16 @@
-import React, { useEffect } from 'react';
-import { View, Text, Button, StyleSheet, Image, TouchableOpacity, TextInput, ImageBackground } from "react-native";
+import React, { useEffect, useState } from 'react';
+import { View, Text, StyleSheet, Image, TouchableOpacity, ImageBackground } from "react-native";
 import { router } from 'expo-router';
 import { userAtom } from '@/atoms/userAtom';
 import { useAtomValue, useSetAtom } from 'jotai';
 import { coupleAtom } from '@/atoms/coupleAtom';
 import { apiFetch } from '@/utils/api';
-import { FontAwesome } from '@expo/vector-icons';
-
-function TabBarIcon(props: {
-  name: React.ComponentProps<typeof FontAwesome>['name'];
-  color: string;
-}) {
-  return <FontAwesome size={28} style={{ marginBottom: -3 }} {...props} />;
-}
+import EmotionRecordModal from '../modal/EmotionRecordModal';
 
 export default function HomeScreen() {
   const user = useAtomValue(userAtom);
-    const setCouple = useSetAtom(coupleAtom);
+  const setCouple = useSetAtom(coupleAtom);
+  const [visible, setVisible] = useState(false);
 
   useEffect(() => {
     if (!user || !user.couple_id) {
@@ -45,7 +39,7 @@ export default function HomeScreen() {
       style={styles.container}
     >
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.push('/screens/solution_preview')}>
+        <TouchableOpacity onPress={() => router.push('/screens/solution_1')}>
           <Image
             style={{ width: 48, height: 48 }}
             source={require('@/assets/images/button-weeklyReport.png')}
@@ -82,6 +76,9 @@ export default function HomeScreen() {
           style={styles.inputBox}
           onPress={() => router.push('/screens/aiChat')}
         >
+          <TouchableOpacity style={styles.inputCircle} onPress={() => setVisible(true)}>
+            <Image source={require('@/assets/images/icon-plus.png')} width={10} height={10} resizeMode='contain' />
+          </TouchableOpacity>
           <Text style={styles.input}>러비에게 답장하기</Text>
         </TouchableOpacity>
         <TouchableOpacity onPress={() => router.push('/screens/aiChat')}>
@@ -92,6 +89,7 @@ export default function HomeScreen() {
           />
         </TouchableOpacity>
       </View>
+      <EmotionRecordModal visible={visible} onClose={() => setVisible(false)} />
     </ImageBackground>
   );
 }
@@ -145,15 +143,30 @@ const styles = StyleSheet.create({
     marginBottom: 80,
   },
   inputBox: {
-    backgroundColor: "rgba(255,255,255,0.5)",
-    borderRadius: 20,
+    backgroundColor: "rgba(255,255,255,0.1)",
+    borderRadius: 25,
     flex: 1,
     paddingVertical: 12,
     paddingHorizontal: 14,
     marginRight: 6,
+    position: 'relative',
+    justifyContent: 'center',
+  },
+  inputCircle: {
+    position: 'absolute',
+    width: 36,
+    height: 36,
+    backgroundColor: 'rgba(255, 255, 255, 0.25)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    fontSize: 24,
+    color: '#fff',
+    borderRadius: 50,
+    left: 4,
   },
   input: {
-    color: '#7c7c7c',
+    color: 'rgba(255,255,255,0.6)',
     fontSize: 16,
+    marginLeft: 38,
   },
 });

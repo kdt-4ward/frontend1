@@ -77,9 +77,9 @@ export const EMOTION_LABELS: Record<string, string> = {
   conflict: '갈등',
 };
 
-const COLORS = ['#79366F', '#C87BAA', '#EAC7DA', '#F7D9E5'];
-const DEFAULT_X = [100, 250, 210, 310];
-const DEFAULT_Y = [130, 90, 200, 190];
+const COLORS = ['#535D8F', '#6F77C7', '#9E93F5', '#CDB8FF', '#EEE0FF'];
+const DEFAULT_X = [98, 233, 205, 260, 275];
+const DEFAULT_Y = [130, 90, 200, 160, 215];
 
 // json: 백엔드에서 온 user_stats 구조
 export function makeBubbleChartData(json: any, user1: string, user2: string) {
@@ -100,12 +100,12 @@ export function makeBubbleChartData(json: any, user1: string, user2: string) {
   });
 
   // count 기준 내림차순 상위 4개
-  const top4 = combined
+  const top5 = combined
     .sort((a, b) => b.count - a.count)
-    .slice(0, 4);
-  const total = top4.reduce((sum, e) => sum + e.count, 0);
+    .slice(0, 5);
+  const total = top5.reduce((sum, e) => sum + e.count, 0);
 
-  return top4.map((e, i) => ({
+  return top5.map((e, i) => ({
     id: (i + 1).toString(),
     percent: total > 0 ? Math.round((e.count / total) * 100) : 0,
     color: COLORS[i % COLORS.length],
@@ -115,8 +115,6 @@ export function makeBubbleChartData(json: any, user1: string, user2: string) {
     count: e.count // 디버깅/확인용(필요없으면 제거)
   }));
 }
-
-export const EMOTION_COLORS = ['#79366F', '#C87BAA', '#EAC7DA', '#F7D9E5', '#A3A1F7'];
 
 // userKey: '1' | '2' | 'total'
 export function makeStackedBarChartData(weeklyData: any, userKey: string) {
@@ -128,6 +126,6 @@ export function makeStackedBarChartData(weeklyData: any, userKey: string) {
         ? ((weeklyData.user_stats?.["1"]?.[emotion]?.total_count || 0) +
            (weeklyData.user_stats?.["2"]?.[emotion]?.total_count || 0))
         : (weeklyData.user_stats?.[userKey]?.[emotion]?.total_count || 0),
-    color: EMOTION_COLORS[idx],
+    color: COLORS[idx],
   }));
 }

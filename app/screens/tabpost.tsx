@@ -63,7 +63,7 @@ export default function TabPostScreen() {
   ];
 
   return (
-      <View style={{ flex: 1 }}>
+      <View style={{ flex: 1, backgroundColor: '#F6F8FF' }}>
         <FlatList
           data={combinedPosts}
           renderItem={renderItem}
@@ -91,7 +91,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     bottom: 30,
     right: 30,
-    backgroundColor: '#2196f3',
+    backgroundColor: '#7493F7',
     width: 56,
     height: 56,
     borderRadius: 28,

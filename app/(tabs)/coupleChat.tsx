@@ -145,7 +145,7 @@ export default function CoupleChatScreen() {
     };
 
     socket.onerror = (err) => {
-      Alert.alert('WebSocket 에러', JSON.stringify(err));
+      console.log('WebSocket 에러', JSON.stringify(err));
     };
     socket.onclose = () => {
       // TODO: 연결 종료 UI 처리
@@ -306,11 +306,13 @@ const styles = StyleSheet.create({
   },
   me: {
     alignSelf: "flex-end",
-    backgroundColor: "#FFA9DB"
+    backgroundColor: "rgba(154, 176, 248, 0.5)",
   },
   ai: {
     alignSelf: "flex-start",
-    backgroundColor: "#fff"
+    backgroundColor: "rgba(255, 255, 255, 0.4)",
+    borderColor: "#9AB0F8",
+    borderWidth: 1,
   },
   sender: {
     fontWeight: "bold",

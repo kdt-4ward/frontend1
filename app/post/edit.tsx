@@ -211,8 +211,8 @@ export default function EditScreen() {
       )}
 
       <View style={styles.editRow}>
-        <Button title="↺ 회전" onPress={() => setRotateDeg((d) => (d + 90) % 360)} />
-        <Button title="↔ 반전" onPress={() => setIsFlipped((v) => !v)} />
+        <Button title="↺ 회전" onPress={() => setRotateDeg((d) => (d + 90) % 360)} color={"#7493F7"}/>
+        <Button title="↔ 반전" onPress={() => setIsFlipped((v) => !v)} color={"#7493F7"} />
       </View>
 
       <DraggableFlatList
@@ -248,10 +248,10 @@ const styles = StyleSheet.create({
   thumbWrap: { position: 'relative', marginRight: 10 },
   thumbContainer: { borderRadius: 8, overflow: 'hidden', borderWidth: 2, borderColor: 'transparent', backgroundColor: '#fff' },
   thumbImage: { width: 80, height: 80 },
-  thumbSelected: { borderColor: '#2196f3', borderWidth: 2 },
+  thumbSelected: { borderColor: '#7493F7', borderWidth: 2 },
   deleteBtn: { position: 'absolute', top: 3, right: 3, backgroundColor: 'rgba(0,0,0,0.6)', borderRadius: 10, paddingHorizontal: 4, paddingVertical: 1, zIndex: 10 },
   deleteText: { color: '#fff', fontSize: 12, fontWeight: 'bold' },
-  nextButton: { backgroundColor: '#2196f3', padding: 14, borderRadius: 8, alignItems: 'center', marginVertical: 12 },
+  nextButton: { backgroundColor: '#7493F7', padding: 14, borderRadius: 8, alignItems: 'center', marginVertical: 12 },
   nextText: { color: '#fff', fontWeight: 'bold', fontSize: 16 },
   pickButton: { backgroundColor: '#f5f5f5', padding: 14, borderRadius: 8, alignItems: 'center' },
   pickText: { color: '#333', fontWeight: 'bold' },
